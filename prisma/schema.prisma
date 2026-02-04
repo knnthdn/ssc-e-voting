@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ROLE {
+  ADMIN
+  VOTER
+}
+
+enum ElectionStatus {
+  ONGOING
+  SCHEDULED
+  COMPLETED
+  PENDING
+  STOPPED
+  PAUSED
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          ROLE      @default(VOTER)
+  sessions      Session[]
+  accounts      Account[]
+  voter         Voter?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Voter {
+  id          String   @id @default(cuid())
+  voterId     String   @unique
+  voter       User     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  address     String
+  phoneNumber String
+  gender      Gender
+  dateOfBirth DateTime
+
+  @@map("voter")
+}
+
+model Election {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  status      ElectionStatus @default(PENDING)
+  description String
+  start       DateTime
+  end         DateTime
+  createdAt   DateTime       @default(now())
+  partylists  Partylist[]
+  positions   Position[]
+
+  @@map("election")
+}
+
+model Partylist {
+  id         String      @id @default(cuid())
+  name       String
+  electionId String
+  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  candidates Candidate[]
+  createdAt  DateTime    @default(now())
+
+  @@unique([electionId, name])
+  @@map("partylist")
+}
+
+model Position {
+  id         String      @id @default(cuid())
+  name       String
+  electionId String
+  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+  canditates Candidate[]
+
+  @@unique([electionId, name])
+  @@map("position")
+}
+
+model Candidate {
+  id          String     @id @default(cuid())
+  bio         String
+  firstName   String
+  lastName    String
+  gender      Gender
+  dateOfBirth DateTime
+  positionId  String
+  position    Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  partylistId String?
+  partylist   Partylist? @relation(fields: [partylistId], references: [id], onDelete: SetNull)
+
+  @@map("canditate")
+}
