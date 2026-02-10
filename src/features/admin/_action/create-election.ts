@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import slugify from "slugify";
 
 type Details = {
   name: string;
@@ -46,8 +47,12 @@ export async function createElection(
   details: Details,
   partylist: Partylist,
 ): ReturnType {
-  const normalizedDetails: Details = {
+  const normalizedDetails = {
     ...details,
+    slug: slugify(details.name, {
+      replacement: "-",
+      lower: true,
+    }),
     end: new Date(details.end),
   };
 
@@ -80,7 +85,11 @@ export async function createElection(
       },
     });
 
-    return { ok: true, id: res.id, message: "Election created successfully!" };
+    return {
+      ok: true,
+      id: res.slug,
+      message: "Election created successfully!",
+    };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

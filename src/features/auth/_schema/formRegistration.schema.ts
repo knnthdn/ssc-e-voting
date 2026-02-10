@@ -42,6 +42,11 @@ export const formRegisterSchema = z.object({
   phoneNumber: z
     .string()
     .regex(/^(?:\+63|0)9\d{9}$/, "Invalid Philippine phone number"),
+
+  schoolId: z
+    .string()
+    .min(5, "School ID must be at least 2 characters")
+    .max(50, "School ID is too long"),
 });
 
 export type FormRegistrationInput = z.infer<typeof formRegisterSchema>;

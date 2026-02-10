@@ -4,17 +4,22 @@ import { env } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
   const session = await getSession();
 
   //* Redirect to /signup when no there's no Session
   if (!session) {
-    return NextResponse.redirect(new URL("/register", request.url));
+    if (pathname !== "/register") {
+      return NextResponse.redirect(new URL("/register", request.url));
+    }
+    return NextResponse.next();
   }
 
   //* Will check if there's a session
   if (session) {
     const voterData = await hasVotersData(session);
 
+    //* CHECK IF ADMIN
     if (
       !request.nextUrl.pathname.startsWith("/admin") &&
       session.user.role === "ADMIN" &&
@@ -34,6 +39,7 @@ export async function proxy(request: NextRequest) {
 
     //* Check if user email is verified but has no voters data.
     if (
+      !request.nextUrl.pathname.startsWith("/admin") &&
       !voterData &&
       session.user.emailVerified &&
       request.nextUrl.pathname !== "/register-form"

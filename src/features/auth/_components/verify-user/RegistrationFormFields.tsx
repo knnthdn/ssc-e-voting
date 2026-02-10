@@ -56,9 +56,11 @@ export default function RegisterFormField() {
       firstName: "",
       lastName: "",
       address: "",
-      dateOfBirth: new Date(Date.now()),
+      // dateOfBirth: new Date(Date.now()),
+      dateOfBirth: new Date(),
       gender: "",
       phoneNumber: "",
+      schoolId: "",
     },
   });
 
@@ -177,92 +179,94 @@ export default function RegisterFormField() {
                 }}
               />
 
-              {/* Gender */}
-              <Controller
-                name="gender"
-                control={form.control}
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="gender">Gender</FieldLabel>
+              <FieldGroup className="flex flex-row">
+                {/* Gender */}
+                <Controller
+                  name="gender"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="gender">Gender</FieldLabel>
 
-                      <NativeSelect
-                        disabled={isSubmitting}
-                        className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0 "
-                        id="gender"
-                        {...field}
-                      >
-                        <NativeSelectOption
-                          value={""}
-                          disabled
-                          className="text-muted-foreground"
-                        >
-                          Please select your gender
-                        </NativeSelectOption>
-                        <NativeSelectOption value={"male"}>
-                          Male
-                        </NativeSelectOption>
-                        <NativeSelectOption value={"female"}>
-                          Female
-                        </NativeSelectOption>
-                      </NativeSelect>
-
-                      {fieldState.error && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-
-              {/* DATEOFBIRTH */}
-              <Controller
-                name="dateOfBirth"
-                control={form.control}
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="date">Date of birth</FieldLabel>
-                      <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger
+                        <NativeSelect
                           disabled={isSubmitting}
-                          asChild
-                          className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0   "
+                          className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0 "
+                          id="gender"
+                          {...field}
                         >
-                          <Button
-                            variant="outline"
-                            id="date"
-                            className="justify-start font-normal "
+                          <NativeSelectOption
+                            value={""}
+                            disabled
+                            className="text-muted-foreground"
                           >
-                            {date ? date.toLocaleDateString() : "Select date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            {...field}
-                            mode="single"
-                            selected={date}
-                            defaultMonth={date}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              setDate(date);
-                              setOpen(false);
-                              field.onChange(date);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                            Please select your gender
+                          </NativeSelectOption>
+                          <NativeSelectOption value={"male"}>
+                            Male
+                          </NativeSelectOption>
+                          <NativeSelectOption value={"female"}>
+                            Female
+                          </NativeSelectOption>
+                        </NativeSelect>
 
-                      {fieldState.error && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+                        {fieldState.error && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+
+                {/* DATEOFBIRTH */}
+                <Controller
+                  name="dateOfBirth"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="date">Date of birth</FieldLabel>
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger
+                            disabled={isSubmitting}
+                            asChild
+                            className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0   "
+                          >
+                            <Button
+                              variant="outline"
+                              id="date"
+                              className="justify-start font-normal "
+                            >
+                              {date ? date.toLocaleDateString() : "Select date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-auto overflow-hidden p-0"
+                            align="start"
+                          >
+                            <Calendar
+                              {...field}
+                              mode="single"
+                              selected={date}
+                              defaultMonth={date}
+                              captionLayout="dropdown"
+                              onSelect={(date) => {
+                                setDate(date);
+                                setOpen(false);
+                                field.onChange(date);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+
+                        {fieldState.error && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+              </FieldGroup>
 
               {/* ADDRESS */}
               <Controller
@@ -306,6 +310,31 @@ export default function RegisterFormField() {
                         {...field}
                         id="phoneNumber"
                         placeholder="Please enter your Phone number"
+                        type="text"
+                        aria-invalid={fieldState.invalid}
+                      />
+
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              <Controller
+                name="schoolId"
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="school-id">School ID</FieldLabel>
+
+                      <AuthInput
+                        disabled={isSubmitting}
+                        {...field}
+                        id="school-id"
+                        placeholder="Please enter your School ID"
                         type="text"
                         aria-invalid={fieldState.invalid}
                       />

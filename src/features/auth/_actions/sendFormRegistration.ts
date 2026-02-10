@@ -24,7 +24,8 @@ export async function sendFormRegistration(
     });
 
     return { ok: true, message: "Form submitted successfully!" };
-  } catch {
+  } catch (e) {
+    console.log(e);
     return { ok: false, message: "Internal Server Error" };
   }
 }

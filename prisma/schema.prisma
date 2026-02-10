@@ -101,6 +101,7 @@ model Voter {
   phoneNumber String
   gender      Gender
   dateOfBirth DateTime
+  schoolId    String
 
   @@map("voter")
 }
@@ -113,9 +114,13 @@ model Election {
   start       DateTime
   end         DateTime
   createdAt   DateTime       @default(now())
+  slug        String         @unique
   partylists  Partylist[]
   positions   Position[]
 
+  @@index([name])
+  @@index([createdAt])
+  @@index([status])
   @@map("election")
 }
 
@@ -145,13 +150,15 @@ model Position {
 
 model Candidate {
   id          String     @id @default(cuid())
+  image       String?
   bio         String
   firstName   String
   lastName    String
   gender      Gender
   dateOfBirth DateTime
-  positionId  String
-  position    Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  schoolId    String
+  positionId  String?
+  position    Position?  @relation(fields: [positionId], references: [id], onDelete: Cascade)
   partylistId String?
   partylist   Partylist? @relation(fields: [partylistId], references: [id], onDelete: SetNull)
 

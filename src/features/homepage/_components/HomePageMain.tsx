@@ -24,7 +24,7 @@ export default function HomePageMain() {
               Welcome to the
             </span>
             <span className="uppercase font-semibold text-3xl lg:text-4xl xl:text-5xl">
-              Student Supreme
+              Supreme Student
             </span>
             <span className=" uppercase font-semibold text-3xl lg:text-4xl xl:text-5xl">
               Council E-Voting{" "}
