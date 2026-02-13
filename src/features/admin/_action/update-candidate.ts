@@ -8,7 +8,8 @@ import { revalidatePath } from "next/cache";
 
 type ReturnType = Promise<{ ok: boolean; message: string }>;
 
-export default async function addCandidate(
+export default async function updateCandidate(
+  candidateId: string,
   data: Candidate,
   slug: string,
 ): ReturnType {
@@ -26,35 +27,34 @@ export default async function addCandidate(
     }
 
     if (
-      election?.status === "COMPLETED" ||
-      election?.status === "ONGOING" ||
-      election?.status === "STOPPED"
+      election.status === "COMPLETED" ||
+      election.status === "ONGOING" ||
+      election.status === "STOPPED"
     ) {
       return {
         ok: false,
-        message: `You cant add candidate while election is ${election.status}`,
+        message: `You cant edit candidate while election is ${election.status}`,
       };
     }
 
-    if (election.status === "SCHEDULED") {
-      if (!election.start) {
-        return {
-          ok: false,
-          message: "Election start date is not set",
-        };
-      }
+    const candidate = await prisma.candidate.findFirst({
+      where: {
+        id: candidateId,
+        position: {
+          is: {
+            electionId: election.id,
+          },
+        },
+      },
+      select: { id: true },
+    });
 
-      const isStillValid = new Date() >= election.start;
-
-      if (!isStillValid)
-        return {
-          ok: false,
-          message:
-            "Scheduled election is already started. Paused to add candidate.",
-        };
+    if (!candidate) {
+      return { ok: false, message: "Candidate not found in this election." };
     }
 
-    await prisma.candidate.create({
+    await prisma.candidate.update({
+      where: { id: candidateId },
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -65,13 +65,12 @@ export default async function addCandidate(
         schoolId: data.schoolId,
         image: data.image,
         positionId: data.positionId,
-        partylistId: data.partylistId ?? undefined,
+        partylistId: data.partylistId ?? null,
       },
     });
 
     revalidatePath(`/admin/election/manage/${slug}`);
-
-    return { ok: true, message: "Candidate added successfully" };
+    return { ok: true, message: "Candidate updated successfully" };
   } catch (error) {
     console.log(error);
     return { ok: false, message: "internal Server Error" };

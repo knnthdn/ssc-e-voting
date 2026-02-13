@@ -4,17 +4,17 @@ export const addCandidateSchema = z.object({
   firstName: z
     .string()
     .min(2, "Candidate firstname must have atleast 2 character")
-    .max(20, "Candidate firstname must be less than 50 characters"),
+    .max(50, "Candidate firstname must be less than 50 characters"),
 
   lastName: z
     .string()
     .min(2, "Candidate lastName must have atleast 2 character")
-    .max(20, "Candidate lastname must be less than 50 characters"),
+    .max(50, "Candidate lastname must be less than 50 characters"),
 
   bio: z
     .string()
     .min(5, "Bio  must have atleast 5 character")
-    .max(20, "Bio  must be less than 50 characters"),
+    .max(50, "Bio  must be less than 50 characters"),
 
   dateOfBirth: z.date().refine((date) => {
     const today = new Date();
@@ -36,7 +36,7 @@ export const addCandidateSchema = z.object({
     .min(1, "Gender is required")
     .refine((val) => ["MALE", "FEMALE"].includes(val), "Invalid gender"),
 
-  positionId: z.string().optional(),
+  positionId: z.string().min(1, "Position is required"),
   partylistId: z.string().optional(),
 
   image: z

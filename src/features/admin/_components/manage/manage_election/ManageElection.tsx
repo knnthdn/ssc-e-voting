@@ -1,7 +1,8 @@
-import Candidate from "@/features/admin/_components/manage/manage_election/Candidate";
+import Status from "@/features/admin/_components/manage/manage_election/_status/Status";
+import Candidate from "@/features/admin/_components/manage/manage_election/_candidate/Candidate";
 
-import Status from "@/features/admin/_components/manage/manage_election/Status";
 import { Election } from "@/features/admin/_types";
+import Position from "@/features/admin/_components/manage/manage_election/_position/Position";
 
 export interface ManageElectionProps extends Election {
   positions: {
@@ -28,6 +29,10 @@ export default function ManageElection({
       {/* Edit Election Status */}
       <Status election={election} />
 
+      {/* POSITION */}
+      <Position />
+
+      {/* CANDIDATE  */}
       <Candidate election={election} />
     </div>
   );

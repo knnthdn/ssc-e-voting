@@ -111,7 +111,7 @@ model Election {
   name        String         @unique
   status      ElectionStatus @default(PENDING)
   description String
-  start       DateTime
+  start       DateTime?
   end         DateTime
   createdAt   DateTime       @default(now())
   slug        String         @unique
@@ -154,13 +154,16 @@ model Candidate {
   bio         String
   firstName   String
   lastName    String
+  fullName    String
   gender      Gender
   dateOfBirth DateTime
   schoolId    String
-  positionId  String?
-  position    Position?  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId  String
+  position    Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
   partylistId String?
   partylist   Partylist? @relation(fields: [partylistId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
 
+  @@index([firstName])
   @@map("canditate")
 }

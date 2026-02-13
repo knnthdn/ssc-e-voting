@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
 import ManageElection from "@/features/admin/_components/manage/manage_election/ManageElection";
 import prisma from "@/lib/prisma";
+import Image from "next/image";
 import { Suspense } from "react";
 
 export const revalidate = 0;
@@ -11,7 +13,7 @@ export default async function ElectionPage({ params }: { params: Params }) {
   const { electionId } = await params;
 
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<ElectionLoading />}>
       <FetchElection electionId={electionId} />
     </Suspense>
   );
@@ -32,7 +34,23 @@ async function FetchElection({ electionId }: { electionId: string }) {
     },
   });
 
-  if (!election) return <div>Not Found!</div>;
+  if (!election)
+    return (
+      <div className="h-full grid place-content-center">
+        <div className="h-full flex flex-col items-center justify-center gap-1">
+          <div className="relative h-37.5 w-75 xl:h-50 xl:w-87.5">
+            <Image
+              alt="No Election image"
+              src={"/no-item.png"}
+              fill
+              className="absolute object-cover"
+            />
+          </div>
+
+          <p className="text-lg xl:text-xl">Not Found</p>
+        </div>
+      </div>
+    );
 
   return (
     <Tabs defaultValue="statistic" className="w-full h-full">

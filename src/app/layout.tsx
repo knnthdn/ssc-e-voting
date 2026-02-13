@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${workSans.variable} antialiased`}>
         {children}
-        <Toaster position="top-center" />
+        <Toaster position="top-right" />
       </body>
     </html>
   );

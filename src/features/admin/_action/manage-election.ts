@@ -57,6 +57,10 @@ export async function startElection(slug: string) {
     },
     data: {
       status: "ONGOING",
+      //*  UPDATE DATE WHEN STATUS IS PENDING || SCHEDULED
+      ...(election.status === "SCHEDULED" || election.status === "PENDING"
+        ? { start: new Date() }
+        : {}),
     },
   });
 

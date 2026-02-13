@@ -90,11 +90,38 @@ export async function GET(req: NextRequest) {
 
     const hasNext: boolean = page !== totalPage;
 
+    const electionWithCounts = await Promise.all(
+      election.map(async (item) => {
+        const [candidateCount, partylistCount] = await Promise.all([
+          prisma.candidate.count({
+            where: {
+              position: {
+                is: {
+                  electionId: item.id,
+                },
+              },
+            },
+          }),
+          prisma.partylist.count({
+            where: {
+              electionId: item.id,
+            },
+          }),
+        ]);
+
+        return {
+          ...item,
+          candidateCount,
+          partylistCount,
+        };
+      }),
+    );
+
     return Response.json(
       {
         ok: true,
         message: "Election list",
-        data: [...election],
+        data: electionWithCounts,
         totalPage,
         totalItems,
         page,

@@ -46,8 +46,10 @@ import { toast } from "sonner";
 
 export default function CandidateForm({
   election,
+  onCandidateAdded,
 }: {
   election: ManageElectionProps;
+  onCandidateAdded?: () => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -56,7 +58,10 @@ export default function CandidateForm({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<null | string>(null);
   const pathname = usePathname().split("/");
-  console.log(pathname[pathname.length - 1]);
+  const canEdit =
+    election.status === "COMPLETED" ||
+    election.status === "ONGOING" ||
+    election.status === "STOPPED";
 
   const form = useForm<AddCandidateInput>({
     resolver: zodResolver(addCandidateSchema),
@@ -97,7 +102,11 @@ export default function CandidateForm({
       }
 
       const res = await addCandidate(
-        { ...data, image: imageUrl },
+        {
+          ...data,
+          image: imageUrl,
+          partylistId: data.partylistId?.trim() || undefined,
+        },
         pathname[pathname.length - 1],
       );
 
@@ -109,6 +118,12 @@ export default function CandidateForm({
       handleResetForm();
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
+
+      try {
+        await onCandidateAdded?.();
+      } catch (refreshError) {
+        console.log(refreshError);
+      }
     } catch {
       setError("Something went wrong");
     } finally {
@@ -125,13 +140,11 @@ export default function CandidateForm({
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <TableHead className="px-4 py-3 w-fit text-right">
-        <DialogTrigger asChild className="w-fit">
-          <Button size="sm" className="w-fit">
-            Add Candidate <CirclePlus />
-          </Button>
-        </DialogTrigger>
-      </TableHead>
+      <DialogTrigger asChild className="w-fit">
+        <Button size="sm" className="w-fit" disabled={canEdit}>
+          Add Candidate <CirclePlus />
+        </Button>
+      </DialogTrigger>
 
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}

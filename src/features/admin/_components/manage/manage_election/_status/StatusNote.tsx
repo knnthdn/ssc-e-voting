@@ -30,4 +30,14 @@ export default function StatusNote({ status }: { status: string }) {
         This election was completed and can&apos;s be reopened.
       </p>
     );
+
+  if (status === "SCHEDULED")
+    return (
+      <p className="text-gray-500 text-sm max-w-2xl">
+        This election is currently <span className="underline">{status}</span>.
+        You can still add candidates, partylists, and edit positions while it
+        has not started. You can start the election early by clicking the Start
+        button below.
+      </p>
+    );
 }

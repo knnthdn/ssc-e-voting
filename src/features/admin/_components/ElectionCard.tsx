@@ -2,14 +2,23 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Election } from "@/features/admin/_types";
-import { ElectionStatus } from "@/lib/generated/prisma/enums";
-import { cn } from "@/lib/utils";
+import { cn, parseDate } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export default function ElectionCard({ election }: { election: Election }) {
-  const { name, id, start, end, status, createdAt, description, slug } =
-    election;
+  const {
+    name,
+    start,
+    end,
+    status,
+    description,
+    slug,
+    candidateCount,
+    partylistCount,
+    createdAt,
+  } = election;
+
   return (
     <Card
       className={cn(
@@ -65,22 +74,32 @@ export default function ElectionCard({ election }: { election: Election }) {
           {/* Left Column */}
           <div className="flex justify-between pr-6">
             <span className="text-muted-foreground">Start date</span>
-            <span className="text-gray-400">--</span>
+
+            {start ? (
+              parseDate(new Date(start))
+            ) : (
+              <span className="text-gray-400">--</span>
+            )}
           </div>
 
           <div className="flex justify-between pl-6 border-l">
             <span className="text-muted-foreground">End date</span>
-            <span className="text-gray-400">--</span>
+
+            {end ? (
+              parseDate(new Date(end))
+            ) : (
+              <span className="text-gray-400">--</span>
+            )}
           </div>
 
           <div className="flex justify-between pr-6">
             <span className="text-muted-foreground">Candidate</span>
-            <span className="text-gray-400">--</span>
+            <span>{candidateCount ?? 0}</span>
           </div>
 
           <div className="flex justify-between pl-6 border-l">
             <span className="text-muted-foreground">Partylist</span>
-            <span className="text-gray-400">--</span>
+            <span>{partylistCount ?? 0}</span>
           </div>
         </div>
 
@@ -89,7 +108,9 @@ export default function ElectionCard({ election }: { election: Election }) {
 
         {/* Footer */}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Created April 12, 2024</span>
+          <span className="text-muted-foreground">
+            Created {parseDate(new Date(createdAt))}
+          </span>
 
           <Link
             href={`/admin/election/manage/${slug}`}

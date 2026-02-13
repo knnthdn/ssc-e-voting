@@ -53,6 +53,7 @@ export async function createElection(
       replacement: "-",
       lower: true,
     }),
+    start: details.status === "PENDING" ? undefined : details.start,
     end: new Date(details.end),
   };
 
@@ -64,6 +65,27 @@ export async function createElection(
     .filter((name) => name.length > 0);
 
   try {
+    if (
+      normalizedDetails.status === "SCHEDULED" &&
+      normalizedDetails.start?.getDate() === new Date().getDate()
+    ) {
+      return {
+        ok: false,
+        message:
+          "You cant schedule election to todays date, set it to Pending and manualy start it instead.",
+      };
+    }
+
+    if (
+      normalizedDetails?.start &&
+      normalizedDetails.start?.getDate() >= normalizedDetails.end?.getDate()
+    ) {
+      return {
+        ok: false,
+        message: "Start date must be greater than end date",
+      };
+    }
+
     const res = await prisma.election.create({
       data: {
         ...normalizedDetails,
@@ -99,6 +121,7 @@ export async function createElection(
         };
       }
     }
+    console.log(error);
 
     return { ok: false, message: "Failed to create election." };
   }

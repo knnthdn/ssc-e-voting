@@ -13,7 +13,7 @@ import {
 } from "@/features/admin/_schema/createElection.schema";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import {
   Select,
@@ -105,11 +105,12 @@ export default function CreateElectionFields() {
     defaultValues: {
       name: "",
       description: "",
-      start: now,
+      start: new Date(),
       end: tomorrow,
       status: "PENDING",
     },
   });
+  const statusValue = useWatch({ control: form.control, name: "status" });
 
   async function handleCreateElection(data: CreateElectionInput) {
     const errMsg = "Something went wrong while creating election";
@@ -294,6 +295,7 @@ export default function CreateElectionFields() {
                       }
                     >
                       <PopoverTrigger
+                        disabled={statusValue === "PENDING"}
                         asChild
                         className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0   "
                       >
@@ -317,10 +319,19 @@ export default function CreateElectionFields() {
                             if (!newStart) return;
 
                             const currentEnd = form.getValues("end");
+                            const normalizedStart = new Date(newStart);
+                            normalizedStart.setHours(0, 0, 0, 0);
+                            const normalizedEnd = currentEnd
+                              ? new Date(currentEnd)
+                              : null;
+                            normalizedEnd?.setHours(0, 0, 0, 0);
 
                             //* transactional update
-                            if (!currentEnd || currentEnd <= newStart) {
-                              const nextDay = new Date(newStart);
+                            if (
+                              !normalizedEnd ||
+                              normalizedEnd <= normalizedStart
+                            ) {
+                              const nextDay = new Date(normalizedStart);
                               nextDay.setDate(nextDay.getDate() + 1);
 
                               form.setValue("end", nextDay, {
@@ -328,7 +339,7 @@ export default function CreateElectionFields() {
                               });
                             }
 
-                            field.onChange(newStart);
+                            field.onChange(normalizedStart);
                             dispatch({
                               type: "SET_OPEN_START_DATE",
                               payload: false,
@@ -336,7 +347,7 @@ export default function CreateElectionFields() {
                           }}
                           disabled={(date) => {
                             const min = new Date(now);
-                            min.setDate(min.getDate() - 1);
+                            min.setDate(min.getDate());
 
                             if (date <= min) return true;
 
@@ -388,6 +399,7 @@ export default function CreateElectionFields() {
                           mode="single"
                           selected={field.value}
                           onSelect={(date) => {
+                            if (!date) return;
                             field.onChange(date);
                             dispatch({
                               type: "SET_OPEN_END_DATE",

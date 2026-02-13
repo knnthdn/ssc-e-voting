@@ -27,6 +27,7 @@ import {
 } from "@/features/admin/_action/manage-election";
 import { useState } from "react";
 
+//* START ELECTION
 export function StartElection({ slug }: { slug: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

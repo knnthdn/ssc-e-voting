@@ -1,14 +1,16 @@
-import { ElectionStatus, Gender } from "@/lib/generated/prisma/enums";
+import { ElectionStatus } from "@/lib/generated/prisma/enums";
 
 export type Election = {
   id: string;
   name: string;
-  start: Date;
+  start?: Date | null;
   end: Date;
   createdAt: Date;
   description: string;
   slug: string;
   status: ElectionStatus;
+  candidateCount?: number;
+  partylistCount?: number;
 };
 
 export type ElectionApi = {
@@ -27,7 +29,7 @@ export interface Candidate {
   lastName: string;
   gender: string;
   dateOfBirth: Date;
-  positionId?: string;
+  positionId: string;
   partylistId?: string;
   image: string;
   schoolId: string;
