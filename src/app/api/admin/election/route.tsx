@@ -17,14 +17,17 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status") as ElectionStatus;
   const sortBy = searchParams.get("sortBy") as SortBy;
   const p = searchParams.get("page") as string;
+  const limitParam = searchParams.get("limit");
 
   let page = p ? +p : 1; //* Handle page query
+  let limit = limitParam ? +limitParam : 26;
 
   if (page < 1) page = 1;
+  if (!Number.isFinite(limit) || limit < 1) limit = 26;
 
   const filter: FilterTypes = {};
 
-  const skip = (page - 1) * 26;
+  const skip = (page - 1) * limit;
 
   //* FILTER BY STATUS
   if (status) {
@@ -72,7 +75,7 @@ export async function GET(req: NextRequest) {
     const election = await prisma.election.findMany({
       where: filter,
       orderBy,
-      take: 26,
+      take: limit,
       skip,
     });
 
@@ -86,7 +89,7 @@ export async function GET(req: NextRequest) {
       where: filter,
     });
 
-    const totalPage = Math.ceil((totalItems ? totalItems : 0) / 26);
+    const totalPage = Math.ceil((totalItems ? totalItems : 0) / limit);
 
     const hasNext: boolean = page !== totalPage;
 

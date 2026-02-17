@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import deleteCandidate from "@/features/admin/_action/delete-candidate";
 import updateCandidate from "@/features/admin/_action/update-candidate";
 import { CandidateInput } from "@/features/admin/_components/manage/CandidateInput";
-import type { Candidate as CandidateRow } from "@/features/admin/_components/manage/manage_election/Candidate";
+import type { Candidate as CandidateRow } from "@/features/admin/_components/manage/manage_election/_candidate/Candidate";
 import { ManageElectionProps } from "@/features/admin/_components/manage/manage_election/ManageElection";
 import {
   AddCandidateInput,
@@ -39,7 +39,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { upload } from "@imagekit/next";
 import { Trash2, Upload, Wrench } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -60,6 +60,7 @@ export default function EditCandidateForm({
   const [error, setError] = useState<string | null>(null);
   const [candidateImageName, setCandidateImageName] = useState("");
   const pathname = usePathname().split("/");
+  const router = useRouter();
   const canEdit =
     election.status === "COMPLETED" ||
     election.status === "ONGOING" ||
@@ -123,6 +124,12 @@ export default function EditCandidateForm({
 
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
+      router.refresh();
+      window.dispatchEvent(
+        new CustomEvent("election:partylist-refresh", {
+          detail: { electionId: election.id },
+        }),
+      );
       await onCandidateUpdated?.();
     } catch {
       setError("Something went wrong");
@@ -149,6 +156,12 @@ export default function EditCandidateForm({
       setConfirmDeleteOpen(false);
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
+      router.refresh();
+      window.dispatchEvent(
+        new CustomEvent("election:partylist-refresh", {
+          detail: { electionId: election.id },
+        }),
+      );
       await onCandidateUpdated?.();
     } catch {
       setError("Something went wrong");
@@ -176,125 +189,209 @@ export default function EditCandidateForm({
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          size="sm"
-          aria-label={`Edit ${candidate.firstName} ${candidate.lastName}`}
-          variant="secondary"
-          disabled={canEdit}
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            size="sm"
+            aria-label={`Edit ${candidate.firstName} ${candidate.lastName}`}
+            variant="secondary"
+            disabled={canEdit}
+          >
+            Edit
+            <Wrench />
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className="max-h-[90vh] overflow-y-auto overflow-x-hidden"
         >
-          Edit
-          <Wrench />
-        </Button>
-      </DialogTrigger>
+          <DialogHeader>
+            <DialogTitle className="text-brand-100 flex justify-between">
+              Edit Candidate
+              <button
+                disabled={isSubmitting}
+                className="text-xs font-normal border border-gray-300 p-1 rounded mr-5 text-brand-800/80 cursor-pointer"
+                onClick={handleResetForm}
+              >
+                Reset fields
+              </button>
+            </DialogTitle>
+          </DialogHeader>
 
-      <DialogContent
-        onInteractOutside={(e) => e.preventDefault()}
-        className="max-h-[90vh] overflow-y-auto overflow-x-hidden"
-      >
-        <DialogHeader>
-          <DialogTitle className="text-brand-100 flex justify-between">
-            Edit Candidate
-            <button
-              disabled={isSubmitting}
-              className="text-xs font-normal border border-gray-300 p-1 rounded mr-5 text-brand-800/80 cursor-pointer"
-              onClick={handleResetForm}
-            >
-              Reset fields
-            </button>
-          </DialogTitle>
-        </DialogHeader>
+          {error && <p className="text-red-600 text-sm">ERROR: {error}</p>}
 
-        {error && <p className="text-red-600 text-sm">ERROR: {error}</p>}
-
-        <form
-          onSubmit={form.handleSubmit(handleEditCandidate)}
-          className="pb-5"
-        >
-          <FieldGroup className="gap-3">
-            <Controller
-              name="firstName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`first-name-${candidate.id}`}>
-                    First name
-                  </FieldLabel>
-                  <CandidateInput
-                    {...field}
-                    id={`first-name-${candidate.id}`}
-                    placeholder="First name"
-                    type="text"
-                    aria-invalid={fieldState.invalid}
-                    disabled={isSubmitting}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="lastName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`last-name-${candidate.id}`}>
-                    Last name
-                  </FieldLabel>
-                  <CandidateInput
-                    {...field}
-                    id={`last-name-${candidate.id}`}
-                    placeholder="Last name"
-                    type="text"
-                    aria-invalid={fieldState.invalid}
-                    disabled={isSubmitting}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="bio"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`bio-${candidate.id}`}>
-                    Candidate Bio
-                  </FieldLabel>
-                  <Textarea
-                    {...field}
-                    id={`bio-${candidate.id}`}
-                    placeholder="Bio"
-                    rows={3}
-                    className="resize-none focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
-                    disabled={isSubmitting}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <div className="flex flex-row gap-3">
+          <form
+            onSubmit={form.handleSubmit(handleEditCandidate)}
+            className="pb-5"
+          >
+            <FieldGroup className="gap-3">
               <Controller
-                name="gender"
+                name="firstName"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`gender-${candidate.id}`}>
-                      Gender
+                    <FieldLabel htmlFor={`first-name-${candidate.id}`}>
+                      First name
+                    </FieldLabel>
+                    <CandidateInput
+                      {...field}
+                      id={`first-name-${candidate.id}`}
+                      placeholder="First name"
+                      type="text"
+                      aria-invalid={fieldState.invalid}
+                      disabled={isSubmitting}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`last-name-${candidate.id}`}>
+                      Last name
+                    </FieldLabel>
+                    <CandidateInput
+                      {...field}
+                      id={`last-name-${candidate.id}`}
+                      placeholder="Last name"
+                      type="text"
+                      aria-invalid={fieldState.invalid}
+                      disabled={isSubmitting}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="bio"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`bio-${candidate.id}`}>
+                      Candidate Bio
+                    </FieldLabel>
+                    <Textarea
+                      {...field}
+                      id={`bio-${candidate.id}`}
+                      placeholder="Bio"
+                      rows={3}
+                      className="resize-none focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
+                      disabled={isSubmitting}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <div className="flex flex-row gap-3">
+                <Controller
+                  name="gender"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={`gender-${candidate.id}`}>
+                        Gender
+                      </FieldLabel>
+                      <NativeSelect
+                        disabled={isSubmitting}
+                        className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
+                        id={`gender-${candidate.id}`}
+                        {...field}
+                      >
+                        <NativeSelectOption
+                          value=""
+                          disabled
+                          className="text-muted-foreground"
+                        >
+                          Please select your gender
+                        </NativeSelectOption>
+                        <NativeSelectOption value="MALE">
+                          Male
+                        </NativeSelectOption>
+                        <NativeSelectOption value="FEMALE">
+                          Female
+                        </NativeSelectOption>
+                      </NativeSelect>
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="dateOfBirth"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={`date-${candidate.id}`}>
+                        Date of birth
+                      </FieldLabel>
+                      <Popover open={openDate} onOpenChange={setOpenDate}>
+                        <PopoverTrigger
+                          disabled={isSubmitting}
+                          asChild
+                          className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
+                        >
+                          <Button
+                            variant="outline"
+                            id={`date-${candidate.id}`}
+                            className="justify-start font-normal"
+                          >
+                            {field.value
+                              ? new Date(field.value).toLocaleDateString()
+                              : "Select date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto overflow-hidden p-0"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            defaultMonth={field.value}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              if (!date) return;
+                              setOpenDate(false);
+                              field.onChange(date);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              </div>
+
+              <Controller
+                name="positionId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`position-${candidate.id}`}>
+                      Position
                     </FieldLabel>
                     <NativeSelect
                       disabled={isSubmitting}
                       className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
-                      id={`gender-${candidate.id}`}
+                      id={`position-${candidate.id}`}
                       {...field}
                     >
                       <NativeSelectOption
@@ -302,12 +399,13 @@ export default function EditCandidateForm({
                         disabled
                         className="text-muted-foreground"
                       >
-                        Please select your gender
+                        Candidate Position
                       </NativeSelectOption>
-                      <NativeSelectOption value="MALE">Male</NativeSelectOption>
-                      <NativeSelectOption value="FEMALE">
-                        Female
-                      </NativeSelectOption>
+                      {election.positions.map((item) => (
+                        <NativeSelectOption value={item.id} key={item.id}>
+                          {item.name}
+                        </NativeSelectOption>
+                      ))}
                     </NativeSelect>
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
@@ -317,222 +415,144 @@ export default function EditCandidateForm({
               />
 
               <Controller
-                name="dateOfBirth"
+                name="partylistId"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`date-${candidate.id}`}>
-                      Date of birth
+                    <FieldLabel htmlFor={`partylist-${candidate.id}`}>
+                      Partylist
                     </FieldLabel>
-                    <Popover open={openDate} onOpenChange={setOpenDate}>
-                      <PopoverTrigger
-                        disabled={isSubmitting}
-                        asChild
-                        className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
+                    <NativeSelect
+                      className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
+                      id={`partylist-${candidate.id}`}
+                      {...field}
+                      disabled={isSubmitting}
+                    >
+                      <NativeSelectOption
+                        value=""
+                        className="text-muted-foreground"
                       >
-                        <Button
-                          variant="outline"
-                          id={`date-${candidate.id}`}
-                          className="justify-start font-normal"
-                        >
-                          {field.value
-                            ? new Date(field.value).toLocaleDateString()
-                            : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-auto overflow-hidden p-0"
-                        align="start"
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          defaultMonth={field.value}
-                          captionLayout="dropdown"
-                          onSelect={(date) => {
-                            if (!date) return;
-                            setOpenDate(false);
-                            field.onChange(date);
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                        Candidate Partylist
+                      </NativeSelectOption>
+                      {election.partylists.map((item) => (
+                        <NativeSelectOption value={item.id} key={item.id}>
+                          {item.name}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
-            </div>
 
-            <Controller
-              name="positionId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`position-${candidate.id}`}>
-                    Position
-                  </FieldLabel>
-                  <NativeSelect
-                    disabled={isSubmitting}
-                    className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
-                    id={`position-${candidate.id}`}
-                    {...field}
-                  >
-                    <NativeSelectOption
-                      value=""
-                      disabled
-                      className="text-muted-foreground"
-                    >
-                      Candidate Position
-                    </NativeSelectOption>
-                    {election.positions.map((item) => (
-                      <NativeSelectOption value={item.id} key={item.id}>
-                        {item.name}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="partylistId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`partylist-${candidate.id}`}>
-                    Partylist
-                  </FieldLabel>
-                  <NativeSelect
-                    className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0"
-                    id={`partylist-${candidate.id}`}
-                    {...field}
-                    disabled={isSubmitting}
-                  >
-                    <NativeSelectOption
-                      value=""
-                      className="text-muted-foreground"
-                    >
-                      Candidate Partylist
-                    </NativeSelectOption>
-                    {election.partylists.map((item) => (
-                      <NativeSelectOption value={item.id} key={item.id}>
-                        {item.name}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="schoolId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`school-id-${candidate.id}`}>
-                    School ID
-                  </FieldLabel>
-                  <CandidateInput
-                    {...field}
-                    id={`school-id-${candidate.id}`}
-                    placeholder="School ID"
-                    type="text"
-                    aria-invalid={fieldState.invalid}
-                    disabled={isSubmitting}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="image"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`candidate-image-${candidate.id}`}>
-                    Image
-                  </FieldLabel>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      id={`candidate-image-${candidate.id}`}
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
+              <Controller
+                name="schoolId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`school-id-${candidate.id}`}>
+                      School ID
+                    </FieldLabel>
+                    <CandidateInput
+                      {...field}
+                      id={`school-id-${candidate.id}`}
+                      placeholder="School ID"
+                      type="text"
                       aria-invalid={fieldState.invalid}
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        setCandidateImageName(file?.name ?? "");
-                        field.onChange(file);
-                      }}
                       disabled={isSubmitting}
                     />
-                    <label
-                      htmlFor={`candidate-image-${candidate.id}`}
-                      className="inline-flex h-10.5 cursor-pointer items-center gap-2 rounded-md border border-gray-400 bg-white px-3 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-light-400"
-                    >
-                      <Upload className="size-4" />
-                      <span>Upload Image</span>
-                    </label>
-                    <span className="text-sm text-muted-foreground">
-                      {candidateImageName || "No file selected"}
-                    </span>
-                  </div>
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                disabled={isSubmitting}
-                variant="outline"
-                onClick={handleResetForm}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                type="button"
-                disabled={isSubmitting}
-                variant="destructive"
-                onClick={() => setConfirmDeleteOpen(true)}
-              >
-                Delete
-                <Trash2 />
-              </Button>
-              <Button disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    Saving <Icon.loading />
-                  </>
-                ) : (
-                  "Save changes"
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
-              </Button>
-            </div>
-          </FieldGroup>
-        </form>
-      </DialogContent>
+              />
+
+              <Controller
+                name="image"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`candidate-image-${candidate.id}`}>
+                      Image
+                    </FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        id={`candidate-image-${candidate.id}`}
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        aria-invalid={fieldState.invalid}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          setCandidateImageName(file?.name ?? "");
+                          field.onChange(file);
+                        }}
+                        disabled={isSubmitting}
+                      />
+                      <label
+                        htmlFor={`candidate-image-${candidate.id}`}
+                        className="inline-flex h-10.5 cursor-pointer items-center gap-2 rounded-md border border-gray-400 bg-white px-3 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-light-400"
+                      >
+                        <Upload className="size-4" />
+                        <span>Upload Image</span>
+                      </label>
+                      <span className="text-sm text-muted-foreground">
+                        {candidateImageName || "No file selected"}
+                      </span>
+                    </div>
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  disabled={isSubmitting}
+                  variant="outline"
+                  onClick={() => {
+                    handleResetForm();
+                    setDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="button"
+                  disabled={isSubmitting}
+                  variant="destructive"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                >
+                  Delete
+                  <Trash2 />
+                </Button>
+                <Button disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      Saving <Icon.loading />
+                    </>
+                  ) : (
+                    "Save changes"
+                  )}
+                </Button>
+              </div>
+            </FieldGroup>
+          </form>
+        </DialogContent>
       </Dialog>
 
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-brand-100">Delete Candidate?</DialogTitle>
+            <DialogTitle className="text-brand-100">
+              Delete Candidate?
+            </DialogTitle>
           </DialogHeader>
 
           <p className="text-sm text-slate-600">

@@ -35,11 +35,12 @@ import {
   AddCandidateInput,
   addCandidateSchema,
 } from "@/features/admin/_schema/addCandidate.schema";
+import { getEffectiveElectionStatus } from "@/lib/election-status";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { upload } from "@imagekit/next";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { CirclePlus, Upload } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -58,10 +59,16 @@ export default function CandidateForm({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<null | string>(null);
   const pathname = usePathname().split("/");
+  const router = useRouter();
+  const effectiveStatus = getEffectiveElectionStatus({
+    status: election.status,
+    start: election.start,
+    end: election.end,
+  });
   const canEdit =
-    election.status === "COMPLETED" ||
-    election.status === "ONGOING" ||
-    election.status === "STOPPED";
+    effectiveStatus === "COMPLETED" ||
+    effectiveStatus === "ONGOING" ||
+    effectiveStatus === "STOPPED";
 
   const form = useForm<AddCandidateInput>({
     resolver: zodResolver(addCandidateSchema),
@@ -118,6 +125,12 @@ export default function CandidateForm({
       handleResetForm();
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
+      router.refresh();
+      window.dispatchEvent(
+        new CustomEvent("election:partylist-refresh", {
+          detail: { electionId: election.id },
+        }),
+      );
 
       try {
         await onCandidateAdded?.();
@@ -488,6 +501,7 @@ export default function CandidateForm({
             <div className="flex justify-end gap-2">
               <DialogClose asChild>
                 <Button
+                  type="button"
                   disabled={isSubmitting}
                   variant={"outline"}
                   onClick={handleResetForm}

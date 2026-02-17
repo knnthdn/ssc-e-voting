@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
+import Configure from "@/features/admin/_components/manage/manage_election/_configure/Configure";
 import ManageElection from "@/features/admin/_components/manage/manage_election/ManageElection";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
@@ -38,16 +39,16 @@ async function FetchElection({ electionId }: { electionId: string }) {
     return (
       <div className="h-full grid place-content-center">
         <div className="h-full flex flex-col items-center justify-center gap-1">
-          <div className="relative h-37.5 w-75 xl:h-50 xl:w-87.5">
+          <div className="relative h-45 w-75 xl:h-55 xl:w-87.5">
             <Image
-              alt="No Election image"
-              src={"/no-item.png"}
+              alt="No Items image"
+              src={"/no-item-image.png"}
               fill
               className="absolute object-cover"
             />
           </div>
 
-          <p className="text-lg xl:text-xl">Not Found</p>
+          <p className="text-lg xl:text-xl">Not found</p>
         </div>
       </div>
     );
@@ -76,7 +77,9 @@ async function FetchElection({ electionId }: { electionId: string }) {
         <ManageElection election={election} />
       </TabsContent>
 
-      <TabsContent value="configure">Configure</TabsContent>
+      <TabsContent value="configure">
+        <Configure election={election} />
+      </TabsContent>
     </Tabs>
   );
 }

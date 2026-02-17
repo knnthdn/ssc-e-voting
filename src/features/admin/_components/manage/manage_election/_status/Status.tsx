@@ -4,16 +4,15 @@ import {
 } from "@/features/admin/_components/manage/manage_election/_status/StartAndToggleElection";
 import StatusNote from "@/features/admin/_components/manage/manage_election/_status/StatusNote";
 import { Election } from "@/features/admin/_types";
+import { getEffectiveElectionStatus } from "@/lib/election-status";
 import { cn } from "@/lib/utils";
 
 export default function Status({ election }: { election: Election }) {
-  const status =
-    election.status === "SCHEDULED" &&
-    election.start !== null &&
-    election.start &&
-    election.start >= election.end
-      ? "ONGOING"
-      : election.status;
+  const status = getEffectiveElectionStatus({
+    status: election.status,
+    start: election.start,
+    end: election.end,
+  });
 
   return (
     <div className="border-b border-gray-300 pb-5">
@@ -39,7 +38,7 @@ export default function Status({ election }: { election: Election }) {
                 "bg-purple-50 text-purple-600 ring-purple-200",
             )}
           >
-            {election.status}
+            {status}
           </span>
         </div>
 
@@ -47,14 +46,14 @@ export default function Status({ election }: { election: Election }) {
         <StatusNote status={status} />
 
         {/* START BUTTON  */}
-        {(election.status === "PENDING" ||
-          election.status === "PAUSED" ||
-          election.status === "SCHEDULED") && (
+        {(status === "PENDING" ||
+          status === "PAUSED" ||
+          status === "SCHEDULED") && (
           <StartElection slug={election.slug} />
         )}
 
         {/* TOGGLE ELECTION */}
-        {election.status === "ONGOING" && (
+        {status === "ONGOING" && (
           <ToggleElection slug={election.slug} />
         )}
       </div>

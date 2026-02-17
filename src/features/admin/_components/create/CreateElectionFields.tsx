@@ -157,7 +157,7 @@ export default function CreateElectionFields() {
           }}
         />
 
-        <form onSubmit={form.handleSubmit(handleCreateElection)} className="">
+        <form onSubmit={form.handleSubmit(handleCreateElection)}>
           {/* ERROR MESSAGE */}
           {state.error && (
             <p className="text-red-500 mb-2">ERROR: {state.error}</p>

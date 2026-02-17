@@ -38,6 +38,14 @@ export async function startElection(slug: string) {
     return { ok: false, message: "Election not found." };
   }
 
+  if (new Date() >= election.end) {
+    return {
+      ok: false,
+      message:
+        "Cannot start election because the end date is equal to todays date or date/time has already passed. Adjust the end date instead",
+    };
+  }
+
   const positions = election.positions;
 
   const hasEmptyPosition = positions.some(

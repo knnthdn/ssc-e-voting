@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Election } from "@/features/admin/_types";
+import { getEffectiveElectionStatus } from "@/lib/election-status";
 import { cn, parseDate } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -18,17 +19,22 @@ export default function ElectionCard({ election }: { election: Election }) {
     partylistCount,
     createdAt,
   } = election;
+  const effectiveStatus = getEffectiveElectionStatus({
+    status,
+    start,
+    end,
+  });
 
   return (
     <Card
       className={cn(
         "w-full md:h-fit max-w-3xl 2xl:max-w-5xl rounded-2xl shadow-md border p-0 border-t-5 border-t-blue-600",
-        status === "ONGOING" && "border-t-orange-600",
-        status === "COMPLETED" && "border-t-green-600",
-        status === "PENDING" && "border-t-blue-600",
-        status === "STOPPED" && "border-t-red-600",
-        status === "PAUSED" && "border-t-yellow-600",
-        status === "SCHEDULED" && "border-t-purple-600",
+        effectiveStatus === "ONGOING" && "border-t-orange-600",
+        effectiveStatus === "COMPLETED" && "border-t-green-600",
+        effectiveStatus === "PENDING" && "border-t-blue-600",
+        effectiveStatus === "STOPPED" && "border-t-red-600",
+        effectiveStatus === "PAUSED" && "border-t-yellow-600",
+        effectiveStatus === "SCHEDULED" && "border-t-purple-600",
       )}
     >
       {/* Top Blue Accent */}
@@ -50,19 +56,21 @@ export default function ElectionCard({ election }: { election: Election }) {
             variant="outline"
             className={cn(
               "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ",
-              status === "ONGOING" &&
+              effectiveStatus === "ONGOING" &&
                 "bg-orange-50 text-orange-600 ring-orange-200",
-              status === "COMPLETED" &&
+              effectiveStatus === "COMPLETED" &&
                 "bg-green-50 text-green-600 ring-green-200",
-              status === "PENDING" && "bg-blue-50 text-blue-600 ring-blue-200",
-              status === "STOPPED" && "bg-red-50 text-red-600 ring-red-200",
-              status === "PAUSED" &&
+              effectiveStatus === "PENDING" &&
+                "bg-blue-50 text-blue-600 ring-blue-200",
+              effectiveStatus === "STOPPED" &&
+                "bg-red-50 text-red-600 ring-red-200",
+              effectiveStatus === "PAUSED" &&
                 "bg-yellow-50 text-yellow-600 ring-yellow-200",
-              status === "SCHEDULED" &&
+              effectiveStatus === "SCHEDULED" &&
                 "bg-purple-50 text-purple-600 ring-purple-200",
             )}
           >
-            {status}
+            {effectiveStatus}
           </Badge>
         </div>
 
