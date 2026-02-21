@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
-import Configure from "@/features/admin/_components/manage/manage_election/_configure/Configure";
+import Configure from "@/features/admin/_components/manage/configure/Configure";
 import ManageElection from "@/features/admin/_components/manage/manage_election/ManageElection";
 import prisma from "@/lib/prisma";
 import Image from "next/image";

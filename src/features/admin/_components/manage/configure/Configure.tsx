@@ -1,5 +1,5 @@
-import ConfigureFields from "@/features/admin/_components/manage/manage_election/_configure/ConfigureFields";
-import DangerZone from "@/features/admin/_components/manage/manage_election/_configure/DangerZone";
+import ConfigureFields from "@/features/admin/_components/manage/configure/ConfigureFields";
+import DangerZone from "@/features/admin/_components/manage/configure/DangerZone";
 import { ManageElectionProps } from "@/features/admin/_components/manage/manage_election/ManageElection";
 import { getEffectiveElectionStatus } from "@/lib/election-status";
 

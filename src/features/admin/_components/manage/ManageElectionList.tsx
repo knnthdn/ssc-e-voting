@@ -74,7 +74,13 @@ export default async function ManageElectionList({ url }: { url: string }) {
       ) : (
         <div className="space-y-8 mx-auto md:mx-0 md:grid md:grid-cols-2 md:gap-x-5 2xl:gap-x-8">
           {data.data.map((items, index) => {
-            return <ElectionCard key={index} election={items} />;
+            return (
+              <ElectionCard
+                key={index}
+                election={items}
+                href={`/admin/election/manage/${items.slug}`}
+              />
+            );
           })}
         </div>
       )}

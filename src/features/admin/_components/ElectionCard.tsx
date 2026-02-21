@@ -7,7 +7,13 @@ import { cn, parseDate } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-export default function ElectionCard({ election }: { election: Election }) {
+export default function ElectionCard({
+  election,
+  href,
+}: {
+  election: Election;
+  href: string;
+}) {
   const {
     name,
     start,
@@ -120,10 +126,7 @@ export default function ElectionCard({ election }: { election: Election }) {
             Created {parseDate(new Date(createdAt))}
           </span>
 
-          <Link
-            href={`/admin/election/manage/${slug}`}
-            className={buttonVariants()}
-          >
+          <Link href={href} className={buttonVariants()}>
             View
             <ChevronRight />
           </Link>
