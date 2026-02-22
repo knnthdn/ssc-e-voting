@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Election } from "@/features/admin/_types";
 import { getEffectiveElectionStatus } from "@/lib/election-status";
 import { cn, parseDate } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export default function ElectionCard({
@@ -24,6 +24,7 @@ export default function ElectionCard({
     candidateCount,
     partylistCount,
     createdAt,
+    hasVoted,
   } = election;
   const effectiveStatus = getEffectiveElectionStatus({
     status,
@@ -126,10 +127,30 @@ export default function ElectionCard({
             Created {parseDate(new Date(createdAt))}
           </span>
 
-          <Link href={href} className={buttonVariants()}>
-            View
-            <ChevronRight />
-          </Link>
+          {hasVoted ? (
+            <span
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "pointer-events-none",
+              )}
+            >
+              Voted <Check />
+            </span>
+          ) : effectiveStatus !== "ONGOING" ? (
+            <span
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "pointer-events-none",
+              )}
+            >
+              Closed
+            </span>
+          ) : (
+            <Link href={href} className={buttonVariants()}>
+              View
+              <ChevronRight />
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>

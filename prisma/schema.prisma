@@ -102,6 +102,7 @@ model Voter {
   gender      Gender
   dateOfBirth DateTime
   schoolId    String
+  votes       Vote[]
 
   @@map("voter")
 }
@@ -117,6 +118,7 @@ model Election {
   slug        String         @unique
   partylists  Partylist[]
   positions   Position[]
+  votes       Vote[]
 
   @@index([name])
   @@index([createdAt])
@@ -143,6 +145,7 @@ model Position {
   election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   createdAt  DateTime    @default(now())
   canditates Candidate[]
+  votes      Vote[]
 
   @@unique([electionId, name])
   @@map("position")
@@ -163,7 +166,26 @@ model Candidate {
   partylistId String?
   partylist   Partylist? @relation(fields: [partylistId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
+  votes       Vote[]
 
   @@index([firstName])
   @@map("canditate")
+}
+
+model Vote {
+  id         String    @id @default(cuid())
+  voterId    String
+  voter      Voter     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  electionId String
+  election   Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  positionId String
+  position   Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate  Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+
+  @@unique([voterId, electionId, positionId])
+  @@index([voterId, electionId])
+  @@index([candidateId])
+  @@map("vote")
 }

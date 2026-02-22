@@ -11,6 +11,7 @@ export type Election = {
   status: ElectionStatus;
   candidateCount?: number;
   partylistCount?: number;
+  hasVoted?: boolean;
 };
 
 export type ElectionApi = {

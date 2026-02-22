@@ -75,12 +75,7 @@ export default function VotersCandidate({ slug }: { slug: string }) {
   }, [selectedPosition]);
 
   if (voteState === "voting")
-    return (
-      <VotingComponent
-        slug={slug}
-        onBack={() => setVoteState("show-candidate")}
-      />
-    );
+    return <VotingComponent slug={slug} />;
 
   return (
     <div className="px-5 md:px-10 py-5 space-y-8 mt-5">

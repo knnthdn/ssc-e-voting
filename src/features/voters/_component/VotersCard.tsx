@@ -105,7 +105,7 @@ export default function VotersCard({
                   <span className="inline-block size-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-brand-500" />
                   <span className="font-semibold text-brand-800">Party:</span>
                   <span className="font-medium text-brand-500 uppercase">
-                    {item.partylist ? item.partylist.name : "INDIVIDUAL"}
+                    {item.partylist ? item.partylist.name : "INDEPENDENT"}
                   </span>
                 </p>
               </div>

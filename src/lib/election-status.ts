@@ -9,17 +9,25 @@ export function getEffectiveElectionStatus({
   start?: Date | string | null;
   end?: Date | string | null;
 }): ElectionStatus {
-  if (status !== "SCHEDULED") return status;
-
   const now = Date.now();
   const startTime = start ? new Date(start).getTime() : null;
   const endTime = end ? new Date(end).getTime() : null;
+
+  if (status === "ONGOING" && endTime !== null && now > endTime) {
+    return "COMPLETED";
+  }
+
+  if (status !== "SCHEDULED") return status;
 
   if (endTime !== null && now > endTime) {
     return "COMPLETED";
   }
 
-  if (startTime !== null && startTime >= now) {
+  if (
+    startTime !== null &&
+    now >= startTime &&
+    (endTime === null || now <= endTime)
+  ) {
     return "ONGOING";
   }
 

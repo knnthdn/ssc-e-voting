@@ -6,12 +6,15 @@ import prisma from "@/lib/prisma";
 export const revalidate = 0;
 
 export default async function StatsPage() {
-  const [totalElections, activeElections, activePartylistCount] =
+  const [totalElections, activeElectionRows, activePartylistCount] =
     await Promise.all([
       prisma.election.count(),
-      prisma.election.count({
+      prisma.election.findMany({
         where: {
           status: "ONGOING",
+        },
+        select: {
+          id: true,
         },
       }),
       prisma.partylist.count({
@@ -22,6 +25,27 @@ export default async function StatsPage() {
         },
       }),
     ]);
+
+  const activeElectionIds = activeElectionRows.map((item) => item.id);
+  const activeElections = activeElectionIds.length;
+
+  const voteCastRows =
+    activeElectionIds.length === 0
+      ? []
+      : await prisma.vote.findMany({
+          where: {
+            electionId: {
+              in: activeElectionIds,
+            },
+          },
+          select: {
+            electionId: true,
+            voterId: true,
+          },
+          distinct: ["electionId", "voterId"],
+        });
+
+  const voteCast = voteCastRows.length;
 
   return (
     <div className="flex flex-col flex-1 gap-8 p-4 h-full">
@@ -52,7 +76,7 @@ export default async function StatsPage() {
           />
           <StatsCard
             label="Vote Cast"
-            value={50}
+            value={voteCast}
             info="Total vote's cast in active election's"
             accent="bg-orange-300"
           />
