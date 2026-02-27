@@ -102,15 +102,3 @@ Prisma workflow:
 Type check:
 
 - `pnpm -s tsc --noEmit`
-
-## Known Conventions
-
-- Position ordering follows the app-defined fixed order (President -> Vice Presidents -> ... -> Representatives).
-- Most admin pages are designed with responsive card/table fallback for small screens.
-
-## Suggested Next Improvements
-
-- Draft ballot autosave and restore for voters.
-- First-missing-position jump action in voting guard.
-- Expand immutable audit coverage to all admin election actions.
-- Add metrics trend charts in dashboard/system status.
