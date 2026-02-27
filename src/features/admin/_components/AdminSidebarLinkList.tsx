@@ -2,7 +2,13 @@
 import { SidebarLink } from "@/features/admin/_components/AdminSidebarLink";
 import { SidebarAccordionLink } from "@/features/admin/_components/SidebarAccordionLink";
 
-import { LayoutDashboard, Settings, TrendingUp, VoteIcon } from "lucide-react";
+import {
+  BookOpen,
+  LayoutDashboard,
+  Settings,
+  TrendingUp,
+  VoteIcon,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { JSX } from "react";
 
@@ -49,6 +55,15 @@ export default function AdminSidebarLinksList() {
         active={
           pathname === pathPrefix + "system-status" ||
           relativePath === "system-status"
+        }
+      />
+
+      <SidebarLink
+        href={pathPrefix + "docs"}
+        label={"Documentation"}
+        icon={<BookOpen />}
+        active={
+          pathname === pathPrefix + "docs" || relativePath === "docs"
         }
       />
 

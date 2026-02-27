@@ -1,20 +1,21 @@
-import { Key, Menu } from "lucide-react";
+import { Key } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import headerBg from "@/../public/header-bg.png";
+import HomePageMobileMenu from "@/features/homepage/_components/HomePageMobileMenu";
 
 const navs = [
   {
-    label: "Docs",
-    path: "#",
+    label: "Vote Rankings",
+    path: "/vote-ranking",
   },
   {
     label: "Vote Results",
     path: "/vote-result",
   },
   {
-    label: "Vote Rankings",
-    path: "/vote-ranking",
+    label: "Docs",
+    path: "/docs",
   },
   {
     label: "About",
@@ -55,7 +56,7 @@ export default function HomePageHeader() {
         </div>
 
         {/* MENU BUTTON (SMALL SCREEN)  */}
-        <Menu className="text-yellow-500 md:mt-2 min-[1200px]:hidden " />
+        <HomePageMobileMenu navs={navs} />
 
         {/* NAV BUTTONS (LARGE SCREEN) */}
         <nav className="min-[1200px]:flex gap-5 mt-1 hidden items-center 2xl:gap-6">

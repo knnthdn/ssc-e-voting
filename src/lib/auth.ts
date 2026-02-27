@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import sendEmail from "@/features/auth/_actions/sendEmail";
 import resetPasswordEmail from "@/features/auth/_actions/reset-password-email";
 import { nextCookies } from "better-auth/next-js";
+import { env } from "@/lib/config";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -23,19 +24,19 @@ export const auth = betterAuth({
       await sendEmail(user.email, url);
     },
   },
-  // socialProviders: {
-  //   google: {
-  //     clientId: process.env.GOOGLE_CLIENT_ID as string,
-  //     clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-  //     accessType: "offline",
-  //     prompt: "select_account consent",
-  //   },
-  //   github: {
-  //     clientId: process.env.GITHUB_CLIENT_ID as string,
-  //     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-  //     prompt: "select_account",
-  //   },
-  // },
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID as string,
+      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+      accessType: "offline",
+      prompt: "select_account consent",
+    },
+    github: {
+      clientId: env.GITHUB_CLIENT_ID as string,
+      clientSecret: env.GITHUB_CLIENT_SECRET as string,
+      prompt: "select_account consent",
+    },
+  },
 
   user: {
     additionalFields: {

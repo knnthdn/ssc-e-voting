@@ -17,7 +17,7 @@ export default async function AuthenticatedLayout({
     <div className="h-screen w-full flex flex-col">
       <VotersHeader />
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 min-h-0">{children}</main>
     </div>
   );
 }

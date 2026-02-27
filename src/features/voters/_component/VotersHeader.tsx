@@ -1,6 +1,6 @@
 import { getSession } from "@/actions/auth-actions";
 import VotersProfile from "@/features/voters/_component/VotersProfile";
-import { Menu } from "lucide-react";
+import VotersMobileMenu from "@/features/voters/_component/VotersMobileMenu";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,7 +28,7 @@ export default async function VotersHeader() {
   return (
     <div className="relative z-50 w-full h-20 sm:h-25  border-b-4 border-[#D08700] bg-[linear-gradient(90deg,rgba(25,60,184,1)_8%,#0066ff_73%)]">
       <header className="px-3 flex justify-between h-full md:px-10 items-center md:py-5 py-3">
-        <Link href={"/vote"}>
+        <Link href={"/"}>
           <div className="flex gap-2 items-center">
             <div className="relative size-[50px] sm:size-[60px]">
               <Image
@@ -51,7 +51,10 @@ export default async function VotersHeader() {
         </Link>
 
         {/* MENU BUTTON (SMALL SCREEN)  */}
-        <Menu className="text-yellow-500 md:mt-2 lg:hidden " />
+        <VotersMobileMenu
+          navs={visibleNavs}
+          isAuthenticated={Boolean(session)}
+        />
 
         {/* NAV BUTTONS (LARGE SCREEN) */}
         <nav className="lg:flex gap-5 mt-1 hidden items-center 2xl:gap-6">

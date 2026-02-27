@@ -32,6 +32,7 @@ export default async function VotersProfile() {
   const voters = await prisma.voter.findUnique({
     where: { voterId: session.user.id },
   });
+
   return (
     <>
       {!voters ? (
@@ -48,12 +49,14 @@ export default async function VotersProfile() {
               <Image
                 alt="Voters Profile"
                 src={
-                  (session.user.image ?? voters.gender === "MALE")
-                    ? "/male-default-profile.png"
-                    : "/female-default-profile.png"
+                  session.user?.image
+                    ? session.user?.image
+                    : voters.gender === "MALE"
+                      ? "/male-default-profile.png"
+                      : "/female-default-profile.png"
                 }
                 fill
-                className="absolute object-cover"
+                className="absolute object-cover rounded-full"
               />
             </div>
           </PopoverTrigger>
