@@ -70,6 +70,7 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessPopover, setShowSuccessPopover] = useState(false);
+  const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [error, setError] = useState("");
   const [saveError, setSaveError] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -138,6 +139,23 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
   const isLastPosition = currentIndex === positions.length - 1;
   const isNextDisabled =
     (currentCandidates.length > 0 && !selectedCandidateId) || isSubmitting;
+  const positionsWithCandidates = useMemo(
+    () => positions.filter((position) => (candidatesByPosition[position] ?? []).length > 0),
+    [candidatesByPosition],
+  );
+  const completedCount = useMemo(
+    () =>
+      positionsWithCandidates.filter((position) => Boolean(selectedByPosition[position]))
+        .length,
+    [positionsWithCandidates, selectedByPosition],
+  );
+  const requiredCount = positionsWithCandidates.length;
+  const missingPositions = useMemo(
+    () =>
+      positionsWithCandidates.filter((position) => !selectedByPosition[position]),
+    [positionsWithCandidates, selectedByPosition],
+  );
+  const isBallotComplete = requiredCount === 0 || completedCount === requiredCount;
   const selectedCandidatesPayload = useMemo<SelectedVoteType[]>(() => {
     return positions.flatMap((position) => {
       const candidateId = selectedByPosition[position];
@@ -184,6 +202,50 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
     setError("");
   };
 
+  const handleSubmitVote = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError("");
+    setSaveError("");
+
+    try {
+      const payload = selectedCandidatesPayload.map((item) => ({
+        positionId: item.positionId,
+        candidateId: item.candidateId,
+      }));
+
+      const response = await fetch("/api/voter/vote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          slug,
+          votes: payload,
+        }),
+      });
+
+      const result = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || !result.ok) {
+        setSaveError(result.message ?? "Unable to submit your vote.");
+        return;
+      }
+    } catch {
+      setSaveError("Unable to submit your vote.");
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    setShowReceiptDialog(false);
+    setShowSuccessPopover(true);
+  };
+
   const handleNext = async () => {
     if (currentCandidates.length > 0 && !selectedCandidateId) {
       setError(`Please select a candidate for ${currentPosition}.`);
@@ -194,43 +256,14 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
     setSaveError("");
 
     if (isLastPosition) {
-      setIsSubmitting(true);
-
-      try {
-        const payload = selectedCandidatesPayload.map((item) => ({
-          positionId: item.positionId,
-          candidateId: item.candidateId,
-        }));
-
-        const response = await fetch("/api/voter/vote", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            slug,
-            votes: payload,
-          }),
-        });
-
-        const result = (await response.json()) as {
-          ok?: boolean;
-          message?: string;
-        };
-
-        if (!response.ok || !result.ok) {
-          setSaveError(result.message ?? "Unable to submit your vote.");
-          return;
-        }
-      } catch {
-        setSaveError("Unable to submit your vote.");
+      if (!isBallotComplete) {
+        setError(
+          `Complete your ballot first. Missing ${missingPositions.length} position(s).`,
+        );
         return;
-      } finally {
-        setIsSubmitting(false);
       }
 
-      console.log("Selected candidates for DB:", selectedCandidatesPayload);
-      setShowSuccessPopover(true);
+      setShowReceiptDialog(true);
       return;
     }
 
@@ -317,6 +350,42 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={showReceiptDialog} onOpenChange={setShowReceiptDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Vote Receipt Summary</DialogTitle>
+            <DialogDescription>
+              Review your selections before final submission.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-80 space-y-2 overflow-auto rounded-md border border-slate-200 p-3">
+            {selectedCandidatesPayload.map((item) => (
+              <div key={item.positionId} className="rounded-md border border-slate-200 px-3 py-2">
+                <p className="text-xs font-semibold text-slate-500">{item.position}</p>
+                <p className="text-sm font-medium text-slate-800">{item.candidateName}</p>
+                <p className="text-xs text-slate-600 uppercase">
+                  {item.partylistName ?? "INDEPENDENT"}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowReceiptDialog(false)}
+              disabled={isSubmitting}
+            >
+              Back
+            </Button>
+            <Button onClick={handleSubmitVote} disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Confirm & Submit"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="px-5 md:px-10 py-5 space-y-5 mt-5 pb-20">
         <h2 className="text-2xl text-brand-100 lg:text-3xl">Vote</h2>
 
@@ -329,6 +398,10 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
           </p>
         </div>
 
+        <div className="rounded-md border border-brand-100 bg-brand-50/40 px-3 py-2 text-sm text-brand-800">
+          Ballot Completion: <span className="font-semibold">{completedCount}/{requiredCount}</span> positions selected
+        </div>
+
         {error && (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
@@ -338,6 +411,12 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
         {saveError && (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {saveError}
+          </p>
+        )}
+
+        {isLastPosition && missingPositions.length > 0 && (
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Missing positions: {missingPositions.join(", ")}
           </p>
         )}
 

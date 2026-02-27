@@ -31,6 +31,8 @@ export default function ElectionCard({
     start,
     end,
   });
+  const isAdminManageRoute = href.startsWith("/admin/");
+  const isVoteResultRoute = href.startsWith("/vote-result/");
 
   return (
     <Card
@@ -136,7 +138,9 @@ export default function ElectionCard({
             >
               Voted <Check />
             </span>
-          ) : effectiveStatus !== "ONGOING" ? (
+          ) : !isAdminManageRoute &&
+            !isVoteResultRoute &&
+            effectiveStatus !== "ONGOING" ? (
             <span
               className={cn(
                 buttonVariants({ variant: "outline" }),
@@ -147,7 +151,7 @@ export default function ElectionCard({
             </span>
           ) : (
             <Link href={href} className={buttonVariants()}>
-              View
+              {isAdminManageRoute ? "Manage" : "View"}
               <ChevronRight />
             </Link>
           )}

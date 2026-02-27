@@ -1,8 +1,8 @@
 import prisma from "@/lib/prisma";
+import StatisticPositionFilter from "@/components/StatisticPositionFilter";
 import StatisticVoteTimeFilter from "@/components/StatisticVoteTimeFilter";
 import Image from "next/image";
-import { BarChart3, BriefcaseBusiness, CalendarDays, Crown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BarChart3, CalendarDays, Crown } from "lucide-react";
 
 export const revalidate = 0;
 
@@ -14,6 +14,14 @@ type RankedCandidate = {
   votes: number;
   progress: number;
   accent?: "gold";
+};
+
+type CandidateBlock = {
+  positionName: string;
+  title: string;
+  subtitle: string;
+  topCandidates: RankedCandidate[];
+  allCandidates: RankedCandidate[];
 };
 
 export type StatisticProps = {
@@ -164,19 +172,18 @@ async function getStatisticData(
         }))
         .sort(
           (a, b) => b.votes - a.votes || a.fullName.localeCompare(b.fullName),
-        )
-        .slice(0, 5);
+        );
       const maxVotes =
         sortedCandidates.length > 0 ? sortedCandidates[0].votes : 1;
 
-      const rankedCandidates: RankedCandidate[] = [];
+      const allRankedCandidates: RankedCandidate[] = [];
 
       sortedCandidates.forEach((candidate, index) => {
         const votes = candidate.votes;
         const progress =
           votes === 0 ? 6 : Math.max(Math.round((votes / maxVotes) * 100), 6);
 
-        rankedCandidates.push({
+        allRankedCandidates.push({
           id: candidate.id,
           rank: index + 1,
           name: candidate.fullName,
@@ -191,12 +198,14 @@ async function getStatisticData(
       const title = hasLessThanFive
         ? `Top Candidates - ${position.name}`
         : `Top 5 Candidates - ${position.name}`;
+      const topCandidates = allRankedCandidates.slice(0, 5);
 
       return {
         positionName: position.name,
         title,
         subtitle: `${position.name} - ${election.name}`,
-        candidates: rankedCandidates,
+        topCandidates,
+        allCandidates: allRankedCandidates,
       };
     }),
   );
@@ -207,6 +216,67 @@ async function getStatisticData(
     allPositionNames: election.positions.map((position) => position.name),
     blocks,
   };
+}
+
+function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
+  return (
+    <div className="mt-5 overflow-hidden rounded-2xl border">
+      {candidates.map((candidate) => (
+        <div
+          key={candidate.id}
+          className="flex flex-wrap items-center gap-4 border-b bg-white p-4 last:border-b-0"
+        >
+          <div className="flex min-w-[280px] flex-1 items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-xl font-bold text-white">
+              {candidate.rank}
+            </span>
+
+            <div className="relative h-14 w-14 overflow-hidden rounded-full border">
+              <Image
+                src="/portrait_placeholder.png"
+                alt={`${candidate.name} placeholder`}
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xl font-semibold text-slate-800 lg:text-2xl">
+                  {candidate.name}
+                </p>
+                {candidate.rank <= 3 && (
+                  <Crown className={`h-4 w-4 ${crownClass(candidate.rank)}`} />
+                )}
+                <span
+                  className={`rounded-md border px-2 py-0.5 text-sm font-semibold`}
+                >
+                  {candidate.party}
+                </span>
+              </div>
+              <p className="text-lg text-slate-500">{candidate.votes} Votes</p>
+            </div>
+          </div>
+
+          <div className="flex min-w-[220px] flex-1 items-center gap-3">
+            <div className="h-4 w-full rounded-full bg-amber-50">
+              <div
+                className={`h-full rounded-full ${barClass()}`}
+                style={{ width: `${candidate.progress}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="w-[110px] text-right">
+            <p className="text-3xl font-semibold text-slate-900 lg:text-4xl">
+              {candidate.votes}
+            </p>
+            <p className="text-lg text-slate-500">Votes</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default async function Statistic({
@@ -255,38 +325,13 @@ export default async function Statistic({
       {/* FILTER BLOCK */}
       <div className="rounded-2xl border bg-white p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <form
-            method="get"
-            action={filterAction}
-            className="flex flex-wrap items-center gap-2"
-          >
-            <input type="hidden" name="voteTime" value={normalizedVoteTime} />
-
-            <div className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800">
-              <BriefcaseBusiness className="h-4 w-4" />
-              {data.electionName}
-            </div>
-
-            <div className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2">
-              <BriefcaseBusiness className="h-4 w-4 text-amber-700" />
-              <select
-                name="position"
-                defaultValue={normalizedPositionName ?? "all"}
-                className="bg-transparent text-sm font-medium text-amber-900 outline-none"
-              >
-                <option value="all">All Positions</option>
-                {data.allPositionNames.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Button type="submit" className="rounded-3xl">
-              Apply
-            </Button>
-          </form>
+          <StatisticPositionFilter
+            filterAction={filterAction}
+            electionName={data.electionName}
+            allPositionNames={data.allPositionNames}
+            positionName={normalizedPositionName ?? "all"}
+            voteTime={normalizedVoteTime}
+          />
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 rounded-xl border bg-slate-50 px-3 py-2">
@@ -323,7 +368,7 @@ export default async function Statistic({
       </div>
 
       {/* TOP CANDIDATES TABLE BLOCKS (PER POSITION) */}
-      {data.blocks.map((block) => (
+      {data.blocks.map((block: CandidateBlock) => (
         <div
           key={block.positionName}
           className="rounded-2xl border bg-white p-5 space-y-10"
@@ -335,67 +380,21 @@ export default async function Statistic({
             {block.subtitle}
           </p>
 
-          {/* TABLE CONTENT */}
-          <div className="mt-5 overflow-hidden rounded-2xl border">
-            {block.candidates.map((candidate) => (
-              <div
-                key={candidate.id}
-                className="flex flex-wrap items-center gap-4 border-b bg-white p-4 last:border-b-0"
-              >
-                <div className="flex min-w-[280px] flex-1 items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-xl font-bold text-white">
-                    {candidate.rank}
-                  </span>
+          <CandidateTable candidates={block.topCandidates} />
 
-                  <div className="relative h-14 w-14 overflow-hidden rounded-full border">
-                    <Image
-                      src="/portrait_placeholder.png"
-                      alt={`${candidate.name} placeholder`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-xl font-semibold text-slate-800 lg:text-2xl">
-                        {candidate.name}
-                      </p>
-                      {candidate.rank <= 3 && (
-                        <Crown
-                          className={`h-4 w-4 ${crownClass(candidate.rank)}`}
-                        />
-                      )}
-                      <span
-                        className={`rounded-md border px-2 py-0.5 text-sm font-semibold`}
-                      >
-                        {candidate.party}
-                      </span>
-                    </div>
-                    <p className="text-lg text-slate-500">
-                      {candidate.votes} Votes
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex min-w-[220px] flex-1 items-center gap-3">
-                  <div className="h-4 w-full rounded-full bg-amber-50">
-                    <div
-                      className={`h-full rounded-full ${barClass()}`}
-                      style={{ width: `${candidate.progress}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="w-[110px] text-right">
-                  <p className="text-3xl font-semibold text-slate-900 lg:text-4xl">
-                    {candidate.votes}
-                  </p>
-                  <p className="text-lg text-slate-500">Votes</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {block.allCandidates.length > 5 && (
+            <details className="group rounded-xl border border-slate-200 px-4 py-3">
+              <summary className="cursor-pointer select-none text-sm font-medium text-slate-700">
+                <span className="group-open:hidden text-brand-100">
+                  Show remaining candidates ({block.allCandidates.length - 5})
+                </span>
+                <span className="hidden group-open:inline text-brand-100">
+                  Collapse remaining candidates
+                </span>
+              </summary>
+              <CandidateTable candidates={block.allCandidates.slice(5)} />
+            </details>
+          )}
         </div>
       ))}
     </section>

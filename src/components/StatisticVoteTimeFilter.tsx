@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
+
 type VoteTimeFilter = "all" | "15m" | "1h" | "6h" | "24h" | "7d";
 
 type VoteTimeOption = {
@@ -20,21 +22,30 @@ export default function StatisticVoteTimeFilter({
   position,
   options,
 }: StatisticVoteTimeFilterProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const onChange = (nextVoteTime: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("position", position);
+    params.set("voteTime", nextVoteTime);
+
+    const query = params.toString();
+    router.replace(query ? `${filterAction}?${query}` : filterAction);
+  };
+
   return (
-    <form method="get" action={filterAction}>
-      <input type="hidden" name="position" value={position} />
-      <select
-        name="voteTime"
-        defaultValue={voteTime}
-        onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className="bg-transparent text-sm text-slate-600 outline-none"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </form>
+    <select
+      name="voteTime"
+      value={voteTime}
+      onChange={(event) => onChange(event.target.value)}
+      className="bg-transparent text-sm text-slate-600 outline-none"
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
   );
 }

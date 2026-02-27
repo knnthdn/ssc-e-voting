@@ -9,8 +9,12 @@ const navs = [
     path: "#",
   },
   {
-    label: "History",
-    path: "#",
+    label: "Vote Results",
+    path: "/vote-result",
+  },
+  {
+    label: "Vote Rankings",
+    path: "/vote-ranking",
   },
   {
     label: "About",
@@ -51,10 +55,10 @@ export default function HomePageHeader() {
         </div>
 
         {/* MENU BUTTON (SMALL SCREEN)  */}
-        <Menu className="text-yellow-500 md:mt-2 lg:hidden " />
+        <Menu className="text-yellow-500 md:mt-2 min-[1200px]:hidden " />
 
         {/* NAV BUTTONS (LARGE SCREEN) */}
-        <nav className="lg:flex gap-5 mt-1 hidden items-center 2xl:gap-6">
+        <nav className="min-[1200px]:flex gap-5 mt-1 hidden items-center 2xl:gap-6">
           {navs.map((items, index) => {
             return (
               <Link

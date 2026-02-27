@@ -53,7 +53,7 @@ export default async function StatsPage() {
       <div>
         <h2 className="text-lg flex text-brand-100 gap-1 mb-3">
           <ChartNoAxesColumn />
-          Statistics
+          Election Overview
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           <StatsCard

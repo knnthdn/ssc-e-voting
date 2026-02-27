@@ -38,6 +38,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   voter         Voter?
+  auditLogs     AuditLog[] @relation("ActorAuditLogs")
 
   @@unique([email])
   @@map("user")
@@ -105,6 +106,25 @@ model Voter {
   votes       Vote[]
 
   @@map("voter")
+}
+
+model AuditLog {
+  id          String   @id
+  actorId     String?
+  actor       User?    @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+  actorName   String
+  actorEmail  String?
+  action      String
+  targetType  String
+  targetId    String?
+  targetLabel String?
+  details     String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([targetType])
+  @@map("audit_log")
 }
 
 model Election {

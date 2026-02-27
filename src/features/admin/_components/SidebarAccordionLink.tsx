@@ -26,7 +26,7 @@ export function SidebarAccordionLink({
 
   const hasActiveChild = items.some((item) => pathname.startsWith(item.href));
 
-  const [open, setOpen] = useState(hasActiveChild);
+  const [open, setOpen] = useState(true);
 
   return (
     <div>

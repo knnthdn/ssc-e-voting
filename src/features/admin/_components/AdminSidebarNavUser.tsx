@@ -1,13 +1,12 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, SquareAsterisk } from "lucide-react";
+import { ChevronsUpDown, LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -25,6 +24,7 @@ import { MyToast } from "@/components/MyToast";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import AdminChangePasswordDialog from "@/features/admin/_components/AdminChangePasswordDialog";
 
 export default function AdminSidebarNavUser() {
   const { data: session, isPending } = authClient.useSession();
@@ -112,10 +112,7 @@ export default function AdminSidebarNavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SquareAsterisk />
-                Change password
-              </DropdownMenuItem>
+              <AdminChangePasswordDialog />
             </DropdownMenuGroup>
 
             {/* LOGOUT BUTTON */}

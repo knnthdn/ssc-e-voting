@@ -2,7 +2,7 @@
 import { SidebarLink } from "@/features/admin/_components/AdminSidebarLink";
 import { SidebarAccordionLink } from "@/features/admin/_components/SidebarAccordionLink";
 
-import { LayoutDashboard, Settings, VoteIcon } from "lucide-react";
+import { LayoutDashboard, Settings, TrendingUp, VoteIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { JSX } from "react";
 
@@ -33,10 +33,23 @@ export default function AdminSidebarLinksList() {
         icon={<VoteIcon />}
         label="Election"
         items={[
-          { label: "Statistic", href: "/admin/election/stats" },
+          {
+            label: "Overview",
+            href: "/admin/election/election-overview",
+          },
           { label: "Create", href: "/admin/election/create" },
           { label: "Manage", href: "/admin/election/manage" },
         ]}
+      />
+
+      <SidebarLink
+        href={pathPrefix + "system-status"}
+        label={"System Status"}
+        icon={<TrendingUp />}
+        active={
+          pathname === pathPrefix + "system-status" ||
+          relativePath === "system-status"
+        }
       />
 
       <SidebarLink

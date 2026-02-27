@@ -112,6 +112,7 @@ async function FetchElection({
       >
         <ElectionRanking
           slug={electionId}
+          status={election.status}
           positionName={positionName}
           voteTime={voteTime}
         />

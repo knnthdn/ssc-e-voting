@@ -26,7 +26,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { TableHead } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import addCandidate from "@/features/admin/_action/add-candidate";
 import { CandidateInput } from "@/features/admin/_components/manage/CandidateInput";
