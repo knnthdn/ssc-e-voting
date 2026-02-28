@@ -1,8 +1,16 @@
-import { getSession } from "@/actions/auth-actions";
 import { env } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
 
-async function hasVoterDataInMiddleware(request: NextRequest): Promise<boolean> {
+type MiddlewareAuthState = {
+  isAuthenticated: boolean;
+  emailVerified: boolean;
+  role: "ADMIN" | "VOTER" | null;
+  hasVoterProfile: boolean;
+};
+
+async function getMiddlewareAuthState(
+  request: NextRequest,
+): Promise<MiddlewareAuthState | null> {
   try {
     const response = await fetch(
       new URL("/api/auth/voter-profile-status", request.url),
@@ -15,21 +23,26 @@ async function hasVoterDataInMiddleware(request: NextRequest): Promise<boolean> 
       },
     );
 
-    if (!response.ok) return false;
+    if (!response.ok) return null;
 
-    const data = (await response.json()) as { hasVoterProfile?: boolean };
-    return Boolean(data.hasVoterProfile);
+    const data = (await response.json()) as Partial<MiddlewareAuthState>;
+    return {
+      isAuthenticated: Boolean(data.isAuthenticated),
+      emailVerified: Boolean(data.emailVerified),
+      role: data.role === "ADMIN" || data.role === "VOTER" ? data.role : null,
+      hasVoterProfile: Boolean(data.hasVoterProfile),
+    };
   } catch {
-    return false;
+    return null;
   }
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getSession();
+  const authState = await getMiddlewareAuthState(request);
 
   //* Redirect to /signup when no there's no Session
-  if (!session) {
+  if (!authState?.isAuthenticated) {
     if (pathname !== "/register") {
       return NextResponse.redirect(new URL("/register", request.url));
     }
@@ -37,14 +50,14 @@ export async function proxy(request: NextRequest) {
   }
 
   //* Will check if there's a session
-  if (session) {
-    const voterData = await hasVoterDataInMiddleware(request);
+  if (authState.isAuthenticated) {
+    const voterData = authState.hasVoterProfile;
 
     //* CHECK IF ADMIN
     if (
       !request.nextUrl.pathname.startsWith("/admin") &&
-      session.user.role === "ADMIN" &&
-      session.user.emailVerified
+      authState.role === "ADMIN" &&
+      authState.emailVerified
     ) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
@@ -52,7 +65,7 @@ export async function proxy(request: NextRequest) {
     //* Redirect to /email-activation when user email is not verified
     if (
       request.nextUrl.pathname !== "/email-activation" &&
-      !session.user.emailVerified &&
+      !authState.emailVerified &&
       env.EMAIL_VERIFICATION === "true"
     ) {
       return NextResponse.redirect(new URL("/email-activation", request.url));
@@ -62,7 +75,7 @@ export async function proxy(request: NextRequest) {
     if (
       !request.nextUrl.pathname.startsWith("/admin") &&
       !voterData &&
-      session.user.emailVerified &&
+      authState.emailVerified &&
       request.nextUrl.pathname !== "/register-form"
     ) {
       return NextResponse.redirect(new URL("/register-form", request.url));

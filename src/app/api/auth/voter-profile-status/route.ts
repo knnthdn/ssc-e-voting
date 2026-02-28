@@ -7,7 +7,16 @@ export async function GET() {
   const session = await getSession();
 
   if (!session) {
-    return Response.json({ ok: false, hasVoterProfile: false }, { status: 401 });
+    return Response.json(
+      {
+        ok: false,
+        isAuthenticated: false,
+        emailVerified: false,
+        role: null,
+        hasVoterProfile: false,
+      },
+      { status: 200 },
+    );
   }
 
   const voter = await prisma.voter.findUnique({
@@ -17,6 +26,9 @@ export async function GET() {
 
   return Response.json({
     ok: true,
+    isAuthenticated: true,
+    emailVerified: Boolean(session.user.emailVerified),
+    role: session.user.role,
     hasVoterProfile: Boolean(voter),
   });
 }
