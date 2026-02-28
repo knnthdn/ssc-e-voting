@@ -1,7 +1,28 @@
 import { getSession } from "@/actions/auth-actions";
-import { hasVotersData } from "@/features/auth/_actions/hasVotersData";
 import { env } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
+
+async function hasVoterDataInMiddleware(request: NextRequest): Promise<boolean> {
+  try {
+    const response = await fetch(
+      new URL("/api/auth/voter-profile-status", request.url),
+      {
+        method: "GET",
+        headers: {
+          cookie: request.headers.get("cookie") ?? "",
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) return false;
+
+    const data = (await response.json()) as { hasVoterProfile?: boolean };
+    return Boolean(data.hasVoterProfile);
+  } catch {
+    return false;
+  }
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -17,7 +38,7 @@ export async function proxy(request: NextRequest) {
 
   //* Will check if there's a session
   if (session) {
-    const voterData = await hasVotersData(session);
+    const voterData = await hasVoterDataInMiddleware(request);
 
     //* CHECK IF ADMIN
     if (
