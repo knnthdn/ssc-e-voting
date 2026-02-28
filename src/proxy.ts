@@ -10,10 +10,17 @@ type MiddlewareAuthState = {
 
 async function getMiddlewareAuthState(
   request: NextRequest,
+  includeVoterProfile: boolean,
 ): Promise<MiddlewareAuthState | null> {
   try {
+    const endpoint = new URL("/api/auth/voter-profile-status", request.url);
+    endpoint.searchParams.set(
+      "includeVoterProfile",
+      includeVoterProfile ? "true" : "false",
+    );
+
     const response = await fetch(
-      new URL("/api/auth/voter-profile-status", request.url),
+      endpoint,
       {
         method: "GET",
         headers: {
@@ -39,7 +46,11 @@ async function getMiddlewareAuthState(
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const authState = await getMiddlewareAuthState(request);
+  const needsVoterProfileCheck = pathname.startsWith("/vote");
+  const authState = await getMiddlewareAuthState(
+    request,
+    needsVoterProfileCheck,
+  );
 
   //* Redirect to /signup when no there's no Session
   if (!authState?.isAuthenticated) {
@@ -75,6 +86,7 @@ export async function proxy(request: NextRequest) {
     if (
       !request.nextUrl.pathname.startsWith("/admin") &&
       !voterData &&
+      needsVoterProfileCheck &&
       authState.emailVerified &&
       request.nextUrl.pathname !== "/register-form"
     ) {

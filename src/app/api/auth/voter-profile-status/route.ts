@@ -3,7 +3,9 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const includeVoterProfile = searchParams.get("includeVoterProfile") !== "false";
   const session = await getSession();
 
   if (!session) {
@@ -19,16 +21,18 @@ export async function GET() {
     );
   }
 
-  const voter = await prisma.voter.findUnique({
-    where: { voterId: session.user.id },
-    select: { id: true },
-  });
+  const voter = includeVoterProfile
+    ? await prisma.voter.findUnique({
+        where: { voterId: session.user.id },
+        select: { id: true },
+      })
+    : null;
 
   return Response.json({
     ok: true,
     isAuthenticated: true,
     emailVerified: Boolean(session.user.emailVerified),
     role: session.user.role,
-    hasVoterProfile: Boolean(voter),
+    hasVoterProfile: includeVoterProfile ? Boolean(voter) : false,
   });
 }
