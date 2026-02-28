@@ -1,6 +1,8 @@
 "use server";
 
+import { getSession } from "@/actions/auth-actions";
 import { checkIfAdmin } from "@/features/admin/_action/manage-election";
+import { writeAuditLog } from "@/features/admin/_action/write-audit-log";
 import { Candidate } from "@/features/admin/_types";
 import { Gender } from "@/lib/generated/prisma/enums";
 import prisma from "@/lib/prisma";
@@ -16,6 +18,8 @@ export default async function addCandidate(
     if (await checkIfAdmin()) {
       return { ok: false, message: "Unauthorized action!" };
     }
+
+    const session = await getSession();
 
     const election = await prisma.election.findUnique({
       where: { slug },
@@ -54,7 +58,7 @@ export default async function addCandidate(
         };
     }
 
-    await prisma.candidate.create({
+    const createdCandidate = await prisma.candidate.create({
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -67,7 +71,39 @@ export default async function addCandidate(
         positionId: data.positionId,
         partylistId: data.partylistId ?? undefined,
       },
+      select: {
+        id: true,
+        fullName: true,
+        schoolId: true,
+        position: {
+          select: {
+            name: true,
+          },
+        },
+        partylist: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
+
+    if (session?.user.role === "ADMIN") {
+      try {
+        await writeAuditLog({
+          actorId: session.user.id,
+          actorName: session.user.name,
+          actorEmail: session.user.email,
+          action: "CANDIDATE_ADDED",
+          targetType: "CANDIDATE",
+          targetId: createdCandidate.id,
+          targetLabel: createdCandidate.fullName,
+          details: `Added candidate in election ${election.name} (${slug}), position ${createdCandidate.position.name}, partylist ${createdCandidate.partylist?.name ?? "INDEPENDENT"}, school ID ${createdCandidate.schoolId}`,
+        });
+      } catch (auditError) {
+        console.error("Failed to write audit log for candidate creation:", auditError);
+      }
+    }
 
     revalidatePath(`/admin/election/manage/${slug}`);
 
