@@ -1,11 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
 import ElectionRanking from "@/features/admin/_components/manage/ElectionRanking";
 import Configure from "@/features/admin/_components/manage/configure/Configure";
 import ManageElection from "@/features/admin/_components/manage/manage_election/ManageElection";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
-import { Suspense } from "react";
 
 export const revalidate = 0;
 
@@ -26,13 +24,11 @@ export default async function ElectionPage({
   const { position, voteTime } = await searchParams;
 
   return (
-    <Suspense fallback={<ElectionLoading />}>
-      <FetchElection
-        electionId={electionId}
-        positionName={position?.trim() || undefined}
-        voteTime={voteTime?.trim() || undefined}
-      />
-    </Suspense>
+    <FetchElection
+      electionId={electionId}
+      positionName={position?.trim() || undefined}
+      voteTime={voteTime?.trim() || undefined}
+    />
   );
 }
 
