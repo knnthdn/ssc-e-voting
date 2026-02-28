@@ -14,7 +14,7 @@ export const addCandidateSchema = z.object({
   bio: z
     .string()
     .min(5, "Bio  must have atleast 5 character")
-    .max(50, "Bio  must be less than 50 characters"),
+    .max(2000, "Bio  must be less than 2000 characters"),
 
   dateOfBirth: z.date().refine((date) => {
     const today = new Date();

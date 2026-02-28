@@ -19,7 +19,7 @@ const navs = [
   },
   {
     label: "About",
-    path: "#",
+    path: "/about",
   },
 ];
 

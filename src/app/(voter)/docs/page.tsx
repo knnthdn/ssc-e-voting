@@ -22,12 +22,24 @@ const votingRules = [
 ];
 
 const electionStatuses = [
-  { name: "PENDING", meaning: "Election exists but is not yet scheduled to run." },
-  { name: "SCHEDULED", meaning: "Election is planned and waiting for start time." },
+  {
+    name: "PENDING",
+    meaning: "Election exists but is not yet scheduled to run.",
+  },
+  {
+    name: "SCHEDULED",
+    meaning: "Election is planned and waiting for start time.",
+  },
   { name: "ONGOING", meaning: "Voting is open for eligible voters." },
   { name: "PAUSED", meaning: "Voting is temporarily suspended by admin." },
-  { name: "STOPPED", meaning: "Voting is manually halted before normal completion." },
-  { name: "COMPLETED", meaning: "Voting has ended and final results are available." },
+  {
+    name: "STOPPED",
+    meaning: "Voting is manually halted before normal completion.",
+  },
+  {
+    name: "COMPLETED",
+    meaning: "Voting has ended and final results are available.",
+  },
 ];
 
 const troubleshootingItems = [
@@ -82,7 +94,7 @@ const sections = [
 export default function DocsPage() {
   return (
     <section className="mx-auto mt-5 max-w-7xl px-2 pb-8 sm:px-5 lg:mt-8 xl:px-10">
-        <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="h-fit rounded-2xl border bg-white p-4 lg:sticky lg:top-4">
           <h2 className="text-lg font-semibold text-brand-100">On this page</h2>
           <ul className="mt-3 space-y-1">
@@ -100,12 +112,15 @@ export default function DocsPage() {
         </aside>
 
         <div className="space-y-6">
-          <header id="overview" className="rounded-2xl border bg-white p-6 scroll-mt-24">
+          <header
+            id="overview"
+            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
             <h1 className="text-2xl font-semibold text-brand-100 lg:text-3xl">
               E-Voting App Documentation
             </h1>
             <p className="mt-2 text-slate-600">
-              This page documents your app structure, voting flow, and important
+              This page documents app structure, voting flow, and important
               routes for both voters and admins.
             </p>
           </header>
@@ -115,7 +130,9 @@ export default function DocsPage() {
               id="tech-stack"
               className="rounded-2xl border bg-white p-6 scroll-mt-24"
             >
-              <h2 className="text-xl font-semibold text-brand-100">Tech Stack</h2>
+              <h2 className="text-xl font-semibold text-brand-100">
+                Tech Stack
+              </h2>
               <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
                 <li>Next.js (App Router) + TypeScript</li>
                 <li>Prisma ORM + PostgreSQL</li>
@@ -128,7 +145,9 @@ export default function DocsPage() {
               id="core-roles"
               className="rounded-2xl border bg-white p-6 scroll-mt-24"
             >
-              <h2 className="text-xl font-semibold text-brand-100">Core Roles</h2>
+              <h2 className="text-xl font-semibold text-brand-100">
+                Core Roles
+              </h2>
               <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
                 <li>
                   <span className="font-semibold">VOTER:</span> casts ballots,
@@ -155,7 +174,9 @@ export default function DocsPage() {
               <li>Voter reviews candidates by position.</li>
               <li>One candidate is selected per position.</li>
               <li>Ballot summary is shown before final submit.</li>
-              <li>Votes are persisted and duplicate submissions are blocked.</li>
+              <li>
+                Votes are persisted and duplicate submissions are blocked.
+              </li>
             </ol>
           </article>
 
@@ -167,7 +188,10 @@ export default function DocsPage() {
               Forgot Password (Voter Guide)
             </h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
-              <li>Click <span className="font-semibold">Forgot Password</span> on the login page.</li>
+              <li>
+                Click <span className="font-semibold">Forgot Password</span> on
+                the login page.
+              </li>
               <li>Enter the email address you used to register.</li>
               <li>
                 Check your inbox for the reset email. If you do not receive it,
@@ -189,8 +213,13 @@ export default function DocsPage() {
             </h2>
             <ul className="mt-3 space-y-2 text-slate-700">
               {electionStatuses.map((status) => (
-                <li key={status.name} className="rounded-md border bg-slate-50 p-3">
-                  <p className="font-mono text-sm text-slate-900">{status.name}</p>
+                <li
+                  key={status.name}
+                  className="rounded-md border bg-slate-50 p-3"
+                >
+                  <p className="font-mono text-sm text-slate-900">
+                    {status.name}
+                  </p>
                   <p className="text-sm text-slate-600">{status.meaning}</p>
                 </li>
               ))}
@@ -247,7 +276,9 @@ export default function DocsPage() {
             id="voting-rules"
             className="rounded-2xl border bg-white p-6 scroll-mt-24"
           >
-            <h2 className="text-xl font-semibold text-brand-100">Voting Rules</h2>
+            <h2 className="text-xl font-semibold text-brand-100">
+              Voting Rules
+            </h2>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
               {votingRules.map((rule) => (
                 <li key={rule}>{rule}</li>
@@ -264,7 +295,10 @@ export default function DocsPage() {
             </h2>
             <ul className="mt-3 space-y-3 text-slate-700">
               {troubleshootingItems.map((item) => (
-                <li key={item.issue} className="rounded-md border bg-slate-50 p-3">
+                <li
+                  key={item.issue}
+                  className="rounded-md border bg-slate-50 p-3"
+                >
                   <p className="font-medium text-slate-900">{item.issue}</p>
                   <p className="text-sm text-slate-600">{item.fix}</p>
                 </li>
@@ -272,7 +306,10 @@ export default function DocsPage() {
             </ul>
           </article>
 
-          <article id="faq" className="rounded-2xl border bg-white p-6 scroll-mt-24">
+          <article
+            id="faq"
+            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
             <h2 className="text-xl font-semibold text-brand-100">FAQ</h2>
             <ul className="mt-3 space-y-3 text-slate-700">
               {faqs.map((item) => (
@@ -307,7 +344,7 @@ export default function DocsPage() {
             </div>
           </article>
         </div>
-        </div>
-      </section>
+      </div>
+    </section>
   );
 }
