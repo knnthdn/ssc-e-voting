@@ -2,7 +2,6 @@ import StatsCard from "@/features/admin/_components/stats/StatsCard";
 import ElectionHistoryTable from "@/features/admin/_components/stats/ElectionHistoryTable";
 import { ChartNoAxesColumn } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { Suspense } from "react";
 
 export const revalidate = 0;
 
@@ -78,20 +77,7 @@ async function StatsOverviewCards() {
   );
 }
 
-function StatsOverviewFallback() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div
-          key={`stats-skeleton-${index}`}
-          className="rounded-xl min-h-37.5 lg:min-h-45 xl:min-h-50 2xl:min-h-0 2xl:aspect-video bg-slate-100 animate-pulse ring-1 ring-black/5"
-        />
-      ))}
-    </div>
-  );
-}
-
-export default function StatsPage() {
+export default async function StatsPage() {
   return (
     <div className="flex flex-col flex-1 gap-8 p-4 h-full">
       {/* Stats cards */}
@@ -100,9 +86,7 @@ export default function StatsPage() {
           <ChartNoAxesColumn />
           Election Overview
         </h2>
-        <Suspense fallback={<StatsOverviewFallback />}>
-          <StatsOverviewCards />
-        </Suspense>
+        <StatsOverviewCards />
       </div>
 
       {/* Election history - take remaining height */}
