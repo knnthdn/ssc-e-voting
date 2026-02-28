@@ -1,4 +1,23 @@
 import CreateElectionFields from "@/features/admin/_components/create/CreateElectionFields";
+import { Suspense } from "react";
+
+function CreateElectionFallback() {
+  return (
+    <div className="space-y-6">
+      <div className="h-10 w-40 rounded bg-slate-200 animate-pulse" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="h-10 rounded bg-slate-200 animate-pulse" />
+        <div className="h-10 rounded bg-slate-200 animate-pulse" />
+      </div>
+      <div className="h-32 rounded bg-slate-200 animate-pulse" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="h-10 rounded bg-slate-200 animate-pulse" />
+        <div className="h-10 rounded bg-slate-200 animate-pulse" />
+      </div>
+      <div className="h-56 rounded bg-slate-200 animate-pulse" />
+    </div>
+  );
+}
 
 export default function CreatePage() {
   return (
@@ -18,7 +37,9 @@ export default function CreatePage() {
 
         {/* CREATE ELECTION FIELDS FORM */}
 
-        <CreateElectionFields />
+        <Suspense fallback={<CreateElectionFallback />}>
+          <CreateElectionFields />
+        </Suspense>
       </div>
     </div>
   );

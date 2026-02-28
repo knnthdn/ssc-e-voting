@@ -9,9 +9,9 @@ import NewPasswordFields from "@/features/auth/_components/reset-password/NewPas
 import ResetPasswordFields from "@/features/auth/_components/reset-password/ResetPasswordFields";
 import SuccessResetPassword from "@/features/auth/_components/reset-password/SuccessResetPassword";
 import { useSearchParams } from "next/navigation";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, Suspense, useState } from "react";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [state, setState] = useState<"onreset" | "check-email" | "success">(
     "onreset",
   );
@@ -31,5 +31,26 @@ export default function ResetPasswordPage() {
         <ResetPasswordFields onSetState={setState} />
       )}
     </div>
+  );
+}
+
+function ResetPasswordFallback() {
+  return (
+    <div className="max-w-lg self-center">
+      <div className="animate-pulse space-y-3">
+        <div className="h-6 w-48 rounded bg-slate-200" />
+        <div className="h-4 w-72 rounded bg-slate-200" />
+        <div className="h-10 w-full rounded bg-slate-200" />
+        <div className="h-10 w-full rounded bg-slate-200" />
+      </div>
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordFallback />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

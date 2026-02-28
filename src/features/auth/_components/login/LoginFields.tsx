@@ -24,6 +24,7 @@ import { Controller, useForm } from "react-hook-form";
 export default function LoginFields() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   const router = useRouter();
 
   const form = useForm<LoginInputs>({
@@ -38,8 +39,10 @@ export default function LoginFields() {
 
   async function handleLogin(data: LoginInputs) {
     setError(null);
+    setIsRedirecting(false);
     setIsLoading(true);
     const { email, password } = data;
+    let isSuccess = false;
 
     try {
       await authClient.signIn.email({
@@ -47,20 +50,32 @@ export default function LoginFields() {
         password,
         fetchOptions: {
           onSuccess({ data: { user } }) {
-            if (!user.emailVerified && env.EMAIL_VERIFICATION === "true")
-              return router.replace("/email-activation?v=r");
+            isSuccess = true;
+            setIsRedirecting(true);
 
-            router.refresh();
+            if (!user.emailVerified && env.EMAIL_VERIFICATION === "true") {
+              return router.replace("/email-activation?v=r");
+            }
+
+            if (user.role === "ADMIN") {
+              return router.replace("/admin/dashboard");
+            }
+
+            router.replace("/vote");
           },
           onError(ctx) {
             setError(ctx.error.message);
+            setIsRedirecting(false);
             MyToast.error(ctx.error.message);
           },
         },
       });
     } catch {
       setError("Unable to Sign in, Please contact support.");
-    } finally {
+      setIsRedirecting(false);
+    }
+
+    if (!isSuccess) {
       setIsLoading(false);
     }
   }
@@ -78,7 +93,7 @@ export default function LoginFields() {
                 <FieldLabel htmlFor="email">Email address</FieldLabel>
 
                 <AuthInput
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                   {...field}
                   id="email"
                   placeholder="Please enter your email address"
@@ -102,7 +117,7 @@ export default function LoginFields() {
                 <FieldLabel htmlFor="password">Password</FieldLabel>
 
                 <PasswordInput
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                   {...field}
                   id="password"
                   placeholder="Please enter your password"
@@ -117,10 +132,16 @@ export default function LoginFields() {
 
         {/* SUBMIT BUTTON  */}
         <AuthSubmitButton
-          loadingState={isLoading}
-          loadingText="Logging in"
+          loadingState={isLoading || isRedirecting}
+          loadingText={isRedirecting ? "Redirecting" : "Logging in"}
           text="Login with email"
         />
+
+        {isRedirecting && (
+          <p className="text-center text-sm text-slate-500">
+            Login successful. Redirecting, please wait...
+          </p>
+        )}
 
         {error && (
           <p className="text-center text-red-500">
