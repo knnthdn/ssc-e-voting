@@ -99,7 +99,7 @@ export default function RegisterFormField() {
       if (!res.ok) {
         setError(res.message);
       }
-      router.refresh();
+      router.replace("/vote");
     } catch {
       MyToast.error(errMsg);
       setError(errMsg);

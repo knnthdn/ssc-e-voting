@@ -63,7 +63,7 @@ const botOptions = {
 //* RESTRICTIVE RATE LIMIT SETTINGS
 const restrictiveRateLimitSettings = {
   mode: "LIVE",
-  max: 5,
+  max: 15,
   interval: "10m",
 } satisfies SlidingWindowRateLimitOptions<[]>;
 

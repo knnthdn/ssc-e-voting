@@ -140,22 +140,29 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
   const isNextDisabled =
     (currentCandidates.length > 0 && !selectedCandidateId) || isSubmitting;
   const positionsWithCandidates = useMemo(
-    () => positions.filter((position) => (candidatesByPosition[position] ?? []).length > 0),
+    () =>
+      positions.filter(
+        (position) => (candidatesByPosition[position] ?? []).length > 0,
+      ),
     [candidatesByPosition],
   );
   const completedCount = useMemo(
     () =>
-      positionsWithCandidates.filter((position) => Boolean(selectedByPosition[position]))
-        .length,
+      positionsWithCandidates.filter((position) =>
+        Boolean(selectedByPosition[position]),
+      ).length,
     [positionsWithCandidates, selectedByPosition],
   );
   const requiredCount = positionsWithCandidates.length;
   const missingPositions = useMemo(
     () =>
-      positionsWithCandidates.filter((position) => !selectedByPosition[position]),
+      positionsWithCandidates.filter(
+        (position) => !selectedByPosition[position],
+      ),
     [positionsWithCandidates, selectedByPosition],
   );
-  const isBallotComplete = requiredCount === 0 || completedCount === requiredCount;
+  const isBallotComplete =
+    requiredCount === 0 || completedCount === requiredCount;
   const selectedCandidatesPayload = useMemo<SelectedVoteType[]>(() => {
     return positions.flatMap((position) => {
       const candidateId = selectedByPosition[position];
@@ -361,9 +368,16 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
 
           <div className="max-h-80 space-y-2 overflow-auto rounded-md border border-slate-200 p-3">
             {selectedCandidatesPayload.map((item) => (
-              <div key={item.positionId} className="rounded-md border border-slate-200 px-3 py-2">
-                <p className="text-xs font-semibold text-slate-500">{item.position}</p>
-                <p className="text-sm font-medium text-slate-800">{item.candidateName}</p>
+              <div
+                key={item.positionId}
+                className="rounded-md border border-slate-200 px-3 py-2"
+              >
+                <p className="text-xs font-semibold text-slate-500">
+                  {item.position}
+                </p>
+                <p className="text-sm font-medium text-slate-800">
+                  {item.candidateName}
+                </p>
                 <p className="text-xs text-slate-600 uppercase">
                   {item.partylistName ?? "INDEPENDENT"}
                 </p>
@@ -391,7 +405,8 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
 
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-brand-500 text-2xl">
-            <span className="text-3xl text-orange-600">|</span> {currentPosition}
+            <span className="text-3xl text-orange-600">|</span>{" "}
+            {currentPosition}
           </h3>
           <p className="text-sm text-brand-300">
             {currentIndex + 1} / {positions.length}
@@ -399,7 +414,11 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
         </div>
 
         <div className="rounded-md border border-brand-100 bg-brand-50/40 px-3 py-2 text-sm text-brand-800">
-          Ballot Completion: <span className="font-semibold">{completedCount}/{requiredCount}</span> positions selected
+          Ballot Completion:{" "}
+          <span className="font-semibold">
+            {completedCount}/{requiredCount}
+          </span>{" "}
+          positions selected
         </div>
 
         {error && (
@@ -421,7 +440,9 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
         )}
 
         {currentCandidates.length === 0 ? (
-          <p className="text-brand-300">No candidates found for this position.</p>
+          <p className="text-brand-300">
+            No candidates found for this position.
+          </p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {currentCandidates.map((item) => {
@@ -441,8 +462,11 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
                 >
                   <div className="relative w-full aspect-[3/4] shrink-0 overflow-hidden">
                     <Image
-                      src={"/portrait_placeholder.png"}
-                      // src={item.image ? `/${item.image}` : "/portrait_placeholder.png"}
+                      src={
+                        item.image
+                          ? `/${item.image}`
+                          : "/portrait_placeholder.png"
+                      }
                       alt={`${item.fullName} profile`}
                       fill
                       className="object-cover"
@@ -471,7 +495,9 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
 
                     <p className="flex gap-1 mt-3 items-center">
                       <span className="inline-block size-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-brand-500" />
-                      <span className="font-semibold text-brand-800">Party:</span>
+                      <span className="font-semibold text-brand-800">
+                        Party:
+                      </span>
                       <span className="font-medium text-brand-500 uppercase">
                         {item.partylist ? item.partylist.name : "INDEPENDENT"}
                       </span>
@@ -494,7 +520,11 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
           </Button>
 
           <Button onClick={handleNext} disabled={isNextDisabled}>
-            {isLastPosition ? (isSubmitting ? "Submitting..." : "Finish") : "Next"}
+            {isLastPosition
+              ? isSubmitting
+                ? "Submitting..."
+                : "Finish"
+              : "Next"}
             <ArrowRight />
           </Button>
         </div>

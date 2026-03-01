@@ -95,8 +95,6 @@ export default function Candidate({
 
       const query = params.toString();
 
-      console.log(`/api/admin/candidate${query ? `?${query}` : ""}`);
-
       const res = await fetch(
         `/api/admin/candidate${query ? `?${query}` : ""}`,
         {
@@ -108,7 +106,6 @@ export default function Candidate({
         },
       );
       const json = await res.json();
-      console.log(json);
       setCandidateApi({
         ok: Boolean(json?.ok),
         message: json?.message ?? "",

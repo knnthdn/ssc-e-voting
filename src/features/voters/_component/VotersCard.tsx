@@ -82,10 +82,10 @@ export default function VotersCard({
               {/* CANDIDATE PROFILE */}
               <div className="relative h-full w-[180px] shrink-0 max-[400px]:h-60 max-[400px]:w-full">
                 <Image
-                  //   src={
-                  //     item.image ? `/${item.image}` : "/portrait_placeholder.png"
-                  //   }
-                  src={"/portrait_placeholder.png"}
+                  src={
+                    item.image ? `/${item.image}` : "/portrait_placeholder.png"
+                  }
+                  // src={"/portrait_placeholder.png"}
                   alt={`${item.fullName} profile`}
                   fill
                   className="absolute object-cover"
