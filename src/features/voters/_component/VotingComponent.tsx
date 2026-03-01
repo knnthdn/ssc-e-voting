@@ -464,7 +464,7 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
                     <Image
                       src={
                         item.image
-                          ? `/${item.image}`
+                          ? `${item.image}`
                           : "/portrait_placeholder.png"
                       }
                       alt={`${item.fullName} profile`}

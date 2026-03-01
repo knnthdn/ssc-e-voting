@@ -209,8 +209,7 @@ export default async function VoteResultByElectionPage({
                     <div className="flex items-center gap-3">
                       <div className="relative h-14 w-14 overflow-hidden rounded-full border">
                         <Image
-                          //   src={winner.image || "/portrait_placeholder.png"}
-                          src={"/portrait_placeholder.png"}
+                          src={winner.image || "/portrait_placeholder.png"}
                           alt={`${winner.fullName} profile`}
                           fill
                           className="object-cover"
