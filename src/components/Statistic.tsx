@@ -222,64 +222,6 @@ async function getStatisticData(
 }
 
 function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
-  const isLowCount = candidates.length <= 4;
-
-  if (isLowCount) {
-    return (
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        {candidates.map((candidate) => (
-          <div
-            key={candidate.id}
-            className="rounded-2xl border bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-lg bg-amber-400 px-3 text-xl font-bold text-white">
-                {candidate.rank}
-              </span>
-              <span className="rounded-md border px-2 py-0.5 text-sm font-semibold">
-                {candidate.party}
-              </span>
-            </div>
-
-            <div className="mt-4 flex flex-col items-center text-center">
-              <div className="relative h-20 w-20 overflow-hidden rounded-full border">
-                <Image
-                  src={candidate.image || "/portrait_placeholder.png"}
-                  alt={`${candidate.name} profile`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <p className="text-xl font-semibold text-slate-800">
-                  {candidate.name}
-                </p>
-                {candidate.rank <= 3 && (
-                  <Crown className={`h-4 w-4 ${crownClass(candidate.rank)}`} />
-                )}
-              </div>
-              <p className="text-base text-slate-500">
-                {candidate.votes} Votes
-              </p>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3">
-              <div className="h-3 w-full rounded-full bg-amber-50">
-                <div
-                  className={`h-full rounded-full ${barClass()}`}
-                  style={{ width: `${candidate.progress}%` }}
-                />
-              </div>
-              <p className="min-w-12 text-right text-sm font-semibold text-slate-700">
-                {candidate.votes}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="mt-5 overflow-hidden rounded-2xl border">
       {candidates.map((candidate) => (
