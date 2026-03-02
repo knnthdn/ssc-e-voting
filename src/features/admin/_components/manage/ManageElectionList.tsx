@@ -11,7 +11,8 @@ import FilterElection from "@/features/admin/_components/manage/FilterElection";
 import SortByElection from "@/features/admin/_components/manage/SortByElection";
 import PaginateSelect from "@/components/PaginateSelect";
 
-export const revalidate = 0;
+const ELECTION_LIST_REVALIDATE_SECONDS = 1800;
+const ELECTION_LIST_TAG = "admin-election-list";
 
 export default async function ManageElectionList({ url }: { url: string }) {
   const cookieStore = await cookies();
@@ -44,6 +45,10 @@ export default async function ManageElectionList({ url }: { url: string }) {
   const res = await fetch(url, {
     headers: {
       cookie: cookieStore.toString(),
+    },
+    next: {
+      revalidate: ELECTION_LIST_REVALIDATE_SECONDS,
+      tags: [ELECTION_LIST_TAG],
     },
   });
 

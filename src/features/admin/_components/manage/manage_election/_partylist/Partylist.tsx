@@ -58,7 +58,7 @@ export default function Partylist({ election }: { election: ManageElectionProps 
     message: "",
     data: [],
   });
-  const [isFetchingData, setFetchingData] = useState(false);
+  const [isFetchingData, setFetchingData] = useState(true);
   const [selectedSortBy, setSelectedSortBy] =
     useState<PartylistSortBy>("latest");
   const [currentPage, setCurrentPage] = useState(1);

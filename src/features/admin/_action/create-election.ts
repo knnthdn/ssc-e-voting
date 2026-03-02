@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { revalidatePath, revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 type Details = {
@@ -106,6 +107,9 @@ export async function createElection(
             : undefined,
       },
     });
+
+    revalidateTag("admin-election-list", "max");
+    revalidatePath("/admin/election/manage");
 
     return {
       ok: true,

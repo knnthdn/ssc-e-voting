@@ -75,7 +75,7 @@ export default function Candidate({
     message: "",
     data: [],
   });
-  const [isFetchingData, setFetchingData] = useState<boolean>(false);
+  const [isFetchingData, setFetchingData] = useState<boolean>(true);
   const [selectedPosition, setSelectedPosition] = useState<string>("");
   const [selectedSortBy, setSelectedSortBy] =
     useState<CandidateSortBy>("latest");
