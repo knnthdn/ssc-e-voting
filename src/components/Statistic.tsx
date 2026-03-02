@@ -240,6 +240,8 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
                 src={candidate.image || "/portrait_placeholder.png"}
                 alt={`${candidate.name} profile`}
                 fill
+                loading="lazy"
+                sizes="(max-width: 640px) 48px, 56px"
                 className="object-cover"
               />
             </div>
@@ -303,6 +305,7 @@ export default async function Statistic({
   const rankingTimestamp = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Manila",
   }).format(new Date());
 
   if (!data) {

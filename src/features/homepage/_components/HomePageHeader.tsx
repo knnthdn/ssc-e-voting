@@ -31,6 +31,8 @@ export default function HomePageHeader() {
         alt="header backround"
         src={headerBg}
         fill
+        loading="lazy"
+        sizes="100vw"
         className="absolute -z-50 hidden md:block"
       />
 
@@ -41,6 +43,8 @@ export default function HomePageHeader() {
               alt="olac-logo"
               src={"/olac-logo.png"}
               fill
+              loading="lazy"
+              sizes="(max-width: 640px) 50px, (max-width: 1024px) 60px, 64px"
               className="rounded-full absolute"
             />
           </div>
