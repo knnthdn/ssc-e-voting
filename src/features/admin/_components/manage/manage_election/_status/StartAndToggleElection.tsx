@@ -25,21 +25,28 @@ import {
   toggleElection,
   toggleElectionStatus,
 } from "@/features/admin/_action/manage-election";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 //* START ELECTION
 export function StartElection({ slug }: { slug: string }) {
+  const router = useRouter();
+  const [isRefreshing, startRefreshTransition] = useTransition();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleStart() {
+    if (isLoading || isRefreshing) return;
     setIsLoading(true);
-    setError("");
+    setError(null);
 
     try {
       const res = await startElection(slug);
 
       if (!res.ok) return setError(res.message);
+      startRefreshTransition(() => {
+        router.refresh();
+      });
     } catch {
       setError("Something went Wrong");
     } finally {
@@ -47,16 +54,12 @@ export function StartElection({ slug }: { slug: string }) {
     }
   }
 
+  const isBusy = isLoading || isRefreshing;
+
   return (
     <div className="mt-5 space-y-2">
-      <Button onClick={handleStart} disabled={isLoading}>
-        {isLoading ? (
-          <>
-            Starting Election <Icon.loading />
-          </>
-        ) : (
-          "Start Election"
-        )}
+      <Button onClick={handleStart} disabled={isBusy}>
+        {isBusy ? "Processing election status..." : "Start Election"}
       </Button>
 
       {error && <p className="text-red-500">ERROR: {error}</p>}
@@ -66,6 +69,8 @@ export function StartElection({ slug }: { slug: string }) {
 
 //* TOGGLE ELECTION
 export function ToggleElection({ slug }: { slug: string }) {
+  const router = useRouter();
+  const [isRefreshing, startRefreshTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
 
   const [selectValue, setSelectValue] = useState<toggleElectionStatus | "">("");
@@ -74,14 +79,20 @@ export function ToggleElection({ slug }: { slug: string }) {
   const [error, setError] = useState<string | null>(null);
 
   async function handleConfirm() {
+    if (!selectValue || isLoading || isRefreshing) return;
     setIsLoading(true);
     setError(null);
 
-    if (!selectValue) return;
-
     try {
-      await toggleElection(slug, selectValue);
+      const res = await toggleElection(slug, selectValue);
+      if (!res.ok) {
+        setError(res.message);
+        return;
+      }
       setIsOpen(false);
+      startRefreshTransition(() => {
+        router.refresh();
+      });
     } catch {
       setError("Something went Wrong");
     } finally {
@@ -89,12 +100,15 @@ export function ToggleElection({ slug }: { slug: string }) {
     }
   }
 
+  const isBusy = isLoading || isRefreshing;
+
   return (
     <div className="mt-5 space-y-2">
       <div className="flex gap-2">
         <Select
           value={selectValue}
           onValueChange={(val: toggleElectionStatus) => setSelectValue(val)}
+          disabled={isBusy}
         >
           <SelectTrigger className="w-full max-w-48 border-brand-100/50">
             <SelectValue placeholder="Status" />
@@ -115,12 +129,27 @@ export function ToggleElection({ slug }: { slug: string }) {
           </SelectContent>
         </Select>
 
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (isBusy) return;
+            setIsOpen(open);
+          }}
+        >
           <DialogTrigger asChild>
-            <Button disabled={!selectValue}>Toggle</Button>
+            <Button disabled={!selectValue || isBusy}>
+              {isBusy ? "Processing..." : "Toggle"}
+            </Button>
           </DialogTrigger>
 
-          <DialogContent>
+          <DialogContent
+            onInteractOutside={(e) => {
+              if (isBusy) e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              if (isBusy) e.preventDefault();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>Change election status?</DialogTitle>
 
@@ -150,17 +179,13 @@ export function ToggleElection({ slug }: { slug: string }) {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline" disabled={isBusy}>
+                  Close
+                </Button>
               </DialogClose>
 
-              <Button onClick={handleConfirm} disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    Updating <Icon.loading />
-                  </>
-                ) : (
-                  "Confirm"
-                )}
+              <Button onClick={handleConfirm} disabled={isBusy}>
+                {isBusy ? "Processing election status..." : "Confirm"}
               </Button>
             </DialogFooter>
           </DialogContent>

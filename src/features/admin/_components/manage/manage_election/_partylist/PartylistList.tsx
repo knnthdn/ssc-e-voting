@@ -16,12 +16,10 @@ export default function PartylistList({
   partylists,
   isFetchingData,
   election,
-  onUpdated,
 }: {
   partylists: PartylistRow[];
   isFetchingData: boolean;
   election: ManageElectionProps;
-  onUpdated?: () => Promise<void> | void;
 }) {
   const textCellClass =
     "h-12 align-middle px-4 py-3 text-sm text-slate-700 max-w-[160px] break-words whitespace-normal";
@@ -72,7 +70,6 @@ export default function PartylistList({
               <EditPartylistMembersForm
                 election={election}
                 partylist={partylist}
-                onUpdated={onUpdated}
               />
             )}
           </TableCell>

@@ -125,11 +125,6 @@ export default function EditCandidateForm({
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
       router.refresh();
-      window.dispatchEvent(
-        new CustomEvent("election:partylist-refresh", {
-          detail: { electionId: election.id },
-        }),
-      );
       await onCandidateUpdated?.();
     } catch {
       setError("Something went wrong");
@@ -157,11 +152,6 @@ export default function EditCandidateForm({
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
       router.refresh();
-      window.dispatchEvent(
-        new CustomEvent("election:partylist-refresh", {
-          detail: { electionId: election.id },
-        }),
-      );
       await onCandidateUpdated?.();
     } catch {
       setError("Something went wrong");

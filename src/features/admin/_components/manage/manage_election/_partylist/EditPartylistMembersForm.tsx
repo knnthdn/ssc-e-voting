@@ -16,6 +16,7 @@ import {
 } from "@/features/admin/_action/manage-partylist-members";
 import deletePartylist from "@/features/admin/_action/delete-partylist";
 import { Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -33,12 +34,11 @@ type CandidateOption = {
 export default function EditPartylistMembersForm({
   election,
   partylist,
-  onUpdated,
 }: {
   election: ManageElectionProps;
   partylist: PartylistRow;
-  onUpdated?: () => Promise<void> | void;
 }) {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [confirmDeletePartylistOpen, setConfirmDeletePartylistOpen] =
@@ -113,8 +113,23 @@ export default function EditPartylistMembersForm({
       }
 
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
-      await loadMemberOptions();
-      await onUpdated?.();
+      const movedCandidate = unassigned.find(
+        (candidate) => candidate.id === selectedUnassignedId,
+      );
+
+      if (movedCandidate) {
+        const nextUnassigned = unassigned.filter(
+          (candidate) => candidate.id !== movedCandidate.id,
+        );
+        const nextMembers = [...members, movedCandidate];
+
+        setUnassigned(nextUnassigned);
+        setMembers(nextMembers);
+        setSelectedUnassignedId(nextUnassigned[0]?.id ?? "");
+        setSelectedMemberId(nextMembers[0]?.id ?? "");
+      }
+
+      router.refresh();
     } catch {
       setError("Failed to add member.");
     } finally {
@@ -141,8 +156,23 @@ export default function EditPartylistMembersForm({
 
       setConfirmRemoveOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
-      await loadMemberOptions();
-      await onUpdated?.();
+      const movedCandidate = members.find(
+        (candidate) => candidate.id === selectedMemberId,
+      );
+
+      if (movedCandidate) {
+        const nextMembers = members.filter(
+          (candidate) => candidate.id !== movedCandidate.id,
+        );
+        const nextUnassigned = [...unassigned, movedCandidate];
+
+        setMembers(nextMembers);
+        setUnassigned(nextUnassigned);
+        setSelectedMemberId(nextMembers[0]?.id ?? "");
+        setSelectedUnassignedId(nextUnassigned[0]?.id ?? "");
+      }
+
+      router.refresh();
     } catch {
       setError("Failed to remove member.");
     } finally {
@@ -164,7 +194,7 @@ export default function EditPartylistMembersForm({
       setConfirmDeletePartylistOpen(false);
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
-      await onUpdated?.();
+      router.refresh();
     } catch {
       setError("Failed to delete partylist.");
     } finally {

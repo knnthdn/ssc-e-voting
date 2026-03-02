@@ -88,7 +88,6 @@ const sections = [
   { id: "voting-rules", label: "Voting Rules" },
   { id: "troubleshooting", label: "Troubleshooting" },
   { id: "faq", label: "FAQ" },
-  { id: "environment-setup", label: "Environment Setup" },
 ];
 
 export default function DocsPage() {
@@ -114,7 +113,7 @@ export default function DocsPage() {
         <div className="space-y-6">
           <header
             id="overview"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h1 className="text-2xl font-semibold text-brand-100 lg:text-3xl">
               E-Voting App Documentation
@@ -128,7 +127,7 @@ export default function DocsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <article
               id="tech-stack"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 Tech Stack
@@ -143,7 +142,7 @@ export default function DocsPage() {
 
             <article
               id="core-roles"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 Core Roles
@@ -163,7 +162,7 @@ export default function DocsPage() {
 
           <article
             id="voting-workflow"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Voting Workflow
@@ -182,7 +181,7 @@ export default function DocsPage() {
 
           <article
             id="forgot-password"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Forgot Password (Voter Guide)
@@ -206,7 +205,7 @@ export default function DocsPage() {
 
           <article
             id="election-status-logic"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Election Status Logic
@@ -229,7 +228,7 @@ export default function DocsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <article
               id="voter-routes"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 Voter Routes
@@ -251,7 +250,7 @@ export default function DocsPage() {
 
             <article
               id="admin-routes"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 Admin Routes
@@ -274,7 +273,7 @@ export default function DocsPage() {
 
           <article
             id="voting-rules"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Voting Rules
@@ -288,7 +287,7 @@ export default function DocsPage() {
 
           <article
             id="troubleshooting"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Troubleshooting
@@ -308,7 +307,7 @@ export default function DocsPage() {
 
           <article
             id="faq"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">FAQ</h2>
             <ul className="mt-3 space-y-3 text-slate-700">
@@ -324,27 +323,28 @@ export default function DocsPage() {
             </ul>
           </article>
 
-          <article
-            id="environment-setup"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
-          >
-            <h2 className="text-xl font-semibold text-brand-100">
-              Environment Setup
-            </h2>
-            <div className="mt-3 space-y-3 text-slate-700">
-              <p>
-                Required environment variable: <code>DATABASE_URL</code>
-              </p>
-              <div className="rounded-md bg-slate-900 p-4 text-sm text-slate-100">
-                <p>pnpm install</p>
-                <p>pnpm prisma migrate dev</p>
-                <p>pnpm prisma generate</p>
-                <p>pnpm dev</p>
-              </div>
-            </div>
-          </article>
         </div>
       </div>
+      <style>{`
+        .docs-section:target {
+          animation: docsSectionFlash 1.2s ease-out;
+        }
+
+        @keyframes docsSectionFlash {
+          0% {
+            background-color: #fff7ed;
+            box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.3);
+          }
+          45% {
+            background-color: #ffedd5;
+            box-shadow: 0 0 0 10px rgba(251, 146, 60, 0.14);
+          }
+          100% {
+            background-color: #ffffff;
+            box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+          }
+        }
+      `}</style>
     </section>
   );
 }

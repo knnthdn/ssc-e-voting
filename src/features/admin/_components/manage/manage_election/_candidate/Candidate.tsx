@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ManageElectionProps } from "@/features/admin/_components/manage/manage_election/ManageElection";
 import { Search } from "lucide-react";
 import CandidateList from "@/features/admin/_components/manage/manage_election/_candidate/CandidateList";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MyToast } from "@/components/MyToast";
 import FilterCandidate from "@/features/admin/_components/manage/manage_election/_candidate/FilterCandidate";
 import SortByCandidate, {
@@ -58,11 +58,18 @@ type CandidateApiState = {
   hasNext?: boolean;
 };
 
+const CANDIDATE_CACHE_TTL_MS = 30 * 60 * 1000;
+const candidateCache = new Map<
+  string,
+  { expiresAt: number; payload: CandidateApiState }
+>();
+
 export default function Candidate({
   election,
 }: {
   election: ManageElectionProps;
 }) {
+  const prevElectionIdRef = useRef(election.id);
   const [candidateApi, setCandidateApi] = useState<CandidateApiState>({
     ok: false,
     message: "",
@@ -94,6 +101,20 @@ export default function Candidate({
       params.set("page", String(currentPage));
 
       const query = params.toString();
+      const cacheKey = [
+        election.id,
+        selectedPosition,
+        selectedSortBy,
+        searchQuery,
+        String(currentPage),
+      ].join("|");
+      const cached = candidateCache.get(cacheKey);
+      const now = Date.now();
+
+      if (cached && cached.expiresAt > now) {
+        setCandidateApi(cached.payload);
+        return;
+      }
 
       const res = await fetch(
         `/api/admin/candidate${query ? `?${query}` : ""}`,
@@ -106,7 +127,7 @@ export default function Candidate({
         },
       );
       const json = await res.json();
-      setCandidateApi({
+      const payload: CandidateApiState = {
         ok: Boolean(json?.ok),
         message: json?.message ?? "",
         data: json?.data ?? [],
@@ -114,6 +135,12 @@ export default function Candidate({
         totalItems: json?.totalItems,
         page: json?.page,
         hasNext: json?.hasNext,
+      };
+
+      setCandidateApi(payload);
+      candidateCache.set(cacheKey, {
+        expiresAt: now + CANDIDATE_CACHE_TTL_MS,
+        payload,
       });
     } catch (error) {
       console.log(error);
@@ -122,6 +149,13 @@ export default function Candidate({
       setFetchingData(false);
     }
   }, [election.id, selectedPosition, selectedSortBy, searchQuery, currentPage]);
+
+  useEffect(() => {
+    if (prevElectionIdRef.current !== election.id) {
+      candidateCache.clear();
+      prevElectionIdRef.current = election.id;
+    }
+  }, [election.id]);
 
   useEffect(() => {
     fetchCandidates();
@@ -134,6 +168,11 @@ export default function Candidate({
   function handleSearch() {
     setCurrentPage(1);
     setSearchQuery(searchInput.trim());
+  }
+
+  async function handleCandidateMutated() {
+    candidateCache.clear();
+    await fetchCandidates();
   }
 
   return (
@@ -210,7 +249,7 @@ export default function Candidate({
               <TableHead className="px-4 py-3 text-right whitespace-nowrap w-[1%]">
                 <CandidateForm
                   election={election}
-                  onCandidateAdded={fetchCandidates}
+                  onCandidateAdded={handleCandidateMutated}
                 />
               </TableHead>
             </TableRow>
@@ -221,7 +260,7 @@ export default function Candidate({
               candidates={candidateApi.data}
               isFetchingData={isFetchingData}
               election={election}
-              onCandidateUpdated={fetchCandidates}
+              onCandidateUpdated={handleCandidateMutated}
             />
           </TableBody>
         </Table>

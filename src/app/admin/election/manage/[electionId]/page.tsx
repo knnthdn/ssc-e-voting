@@ -5,7 +5,7 @@ import ManageElection from "@/features/admin/_components/manage/manage_election/
 import prisma from "@/lib/prisma";
 import Image from "next/image";
 
-export const revalidate = 0;
+export const revalidate = 1800;
 
 type Params = Promise<{ electionId: string }>;
 type SearchParams = Promise<{

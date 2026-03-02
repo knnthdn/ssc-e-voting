@@ -125,17 +125,7 @@ export default function CandidateForm({
       setDialogOpen(false);
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
       router.refresh();
-      window.dispatchEvent(
-        new CustomEvent("election:partylist-refresh", {
-          detail: { electionId: election.id },
-        }),
-      );
-
-      try {
-        await onCandidateAdded?.();
-      } catch (refreshError) {
-        console.log(refreshError);
-      }
+      await onCandidateAdded?.();
     } catch {
       setError("Something went wrong");
     } finally {

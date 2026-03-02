@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import StatisticPositionFilter from "@/components/StatisticPositionFilter";
 import StatisticVoteTimeFilter from "@/components/StatisticVoteTimeFilter";
+import StatisticRefreshButton from "@/components/StatisticRefreshButton";
 import Image from "next/image";
 import { BarChart3, CalendarDays, Crown } from "lucide-react";
 
@@ -223,18 +224,18 @@ async function getStatisticData(
 
 function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
   return (
-    <div className="mt-5 overflow-hidden rounded-2xl border">
+    <div className="mt-4 overflow-hidden rounded-2xl border sm:mt-5">
       {candidates.map((candidate) => (
         <div
           key={candidate.id}
-          className="flex flex-wrap items-center gap-4 border-b bg-white p-4 last:border-b-0"
+          className="flex flex-col gap-3 border-b bg-white p-3 last:border-b-0 sm:p-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
         >
-          <div className="flex min-w-[280px] flex-1 items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-xl font-bold text-white">
+          <div className="flex w-full items-center gap-3 lg:min-w-[280px] lg:flex-1">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-sm font-bold text-white sm:h-10 sm:w-10 sm:text-xl">
               {candidate.rank}
             </span>
 
-            <div className="relative h-14 w-14 overflow-hidden rounded-full border">
+            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border aspect-square sm:h-14 sm:w-14">
               <Image
                 src={candidate.image || "/portrait_placeholder.png"}
                 alt={`${candidate.name} profile`}
@@ -245,23 +246,25 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
 
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xl font-semibold text-slate-800 lg:text-2xl">
+                <p className="text-base font-semibold text-slate-800 sm:text-lg lg:text-2xl">
                   {candidate.name}
                 </p>
                 {candidate.rank <= 3 && (
                   <Crown className={`h-4 w-4 ${crownClass(candidate.rank)}`} />
                 )}
                 <span
-                  className={`rounded-md border px-2 py-0.5 text-sm font-semibold`}
+                  className={`rounded-md border px-2 py-0.5 text-xs font-semibold sm:text-sm`}
                 >
                   {candidate.party}
                 </span>
               </div>
-              <p className="text-lg text-slate-500">{candidate.votes} Votes</p>
+              <p className="text-sm text-slate-500 sm:text-base">
+                {candidate.votes} Votes
+              </p>
             </div>
           </div>
 
-          <div className="flex min-w-[220px] flex-1 items-center gap-3">
+          <div className="flex w-full items-center gap-3 lg:min-w-[220px] lg:flex-1">
             <div className="h-4 w-full rounded-full bg-amber-50">
               <div
                 className={`h-full rounded-full ${barClass()}`}
@@ -270,11 +273,11 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
             </div>
           </div>
 
-          <div className="w-[110px] text-right">
-            <p className="text-3xl font-semibold text-slate-900 lg:text-4xl">
+          <div className="w-full text-left lg:w-[110px] lg:text-right">
+            <p className="text-2xl font-semibold text-slate-900 sm:text-3xl lg:text-4xl">
               {candidate.votes}
             </p>
-            <p className="text-lg text-slate-500">Votes</p>
+            <p className="text-sm text-slate-500 sm:text-base">Votes</p>
           </div>
         </div>
       ))}
@@ -297,6 +300,10 @@ export default async function Statistic({
     normalizedPositionName,
     normalizedVoteTime,
   );
+  const rankingTimestamp = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
 
   if (!data) {
     return (
@@ -315,14 +322,25 @@ export default async function Statistic({
   }
 
   return (
-    <section className="space-y-4 p-8">
+    <section className="space-y-4 p-4 sm:p-6 lg:p-8">
       <div>
-        <h2 className="text-2xl font-semibold text-brand-100 lg:text-3xl">
+        <h2 className="text-xl font-semibold text-brand-100 sm:text-2xl lg:text-3xl">
           Election Statistics
         </h2>
-        <p className="mt-2 text-base text-slate-500 lg:text-lg">
+        <p className="mt-2 text-sm text-slate-500 sm:text-base lg:text-lg">
           Election Statistic for {data.electionName}
         </p>
+      </div>
+
+      <div className="rounded-2xl border bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">
+            Candidate ranking as of {rankingTimestamp}
+          </p>
+          <div className="w-full sm:w-auto [&>button]:w-full sm:[&>button]:w-auto">
+            <StatisticRefreshButton />
+          </div>
+        </div>
       </div>
 
       {/* FILTER BLOCK */}
@@ -351,20 +369,20 @@ export default async function Statistic({
       </div>
 
       {/* TOTAL VOTES SUMMARY */}
-      <div className="rounded-2xl border bg-white p-5">
+      <div className="rounded-2xl border bg-white p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
-            <div className="grid h-14 w-14 place-content-center rounded-xl bg-amber-50 text-amber-500">
-              <BarChart3 className="h-8 w-8" />
+            <div className="grid h-12 w-12 place-content-center rounded-xl bg-amber-50 text-amber-500 sm:h-14 sm:w-14">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-slate-900 lg:text-4xl">
+              <p className="text-xl font-bold text-slate-900 sm:text-3xl lg:text-4xl">
                 {data.totalVotes.toLocaleString()}{" "}
-                <span className="text-2xl font-medium text-slate-800 lg:text-3xl">
+                <span className="text-lg font-medium text-slate-800 sm:text-2xl lg:text-3xl">
                   Total Votes
                 </span>
               </p>
-              <p className="text-lg text-slate-500">Total Votes</p>
+              <p className="text-sm text-slate-500 sm:text-base">Total Votes</p>
             </div>
           </div>
         </div>
@@ -374,12 +392,12 @@ export default async function Statistic({
       {data.blocks.map((block: CandidateBlock) => (
         <div
           key={block.positionName}
-          className="rounded-2xl border bg-white p-5 space-y-10"
+          className="space-y-6 rounded-2xl border bg-white p-4 sm:space-y-8 sm:p-5 lg:space-y-10"
         >
-          <h3 className="text-2xl font-semibold text-slate-900 lg:text-3xl">
+          <h3 className="text-xl font-semibold text-slate-900 sm:text-2xl lg:text-3xl">
             {block.title}
           </h3>
-          <p className="mt-2 text-base text-slate-500 lg:text-xl">
+          <p className="mt-2 text-sm text-slate-500 sm:text-base lg:text-xl">
             {block.subtitle}
           </p>
 

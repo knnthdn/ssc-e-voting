@@ -27,6 +27,7 @@ import SortByPartylist, {
 } from "@/features/admin/_components/manage/manage_election/_partylist/SortByPartylist";
 import { getEffectiveElectionStatus } from "@/lib/election-status";
 import { CirclePlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -42,6 +43,7 @@ type PartylistApiState = {
 };
 
 export default function Partylist({ election }: { election: ManageElectionProps }) {
+  const router = useRouter();
   const effectiveStatus = getEffectiveElectionStatus({
     status: election.status,
     start: election.start,
@@ -105,24 +107,11 @@ export default function Partylist({ election }: { election: ManageElectionProps 
     } finally {
       setFetchingData(false);
     }
-  }, [currentPage, election.id, selectedSortBy]);
+  }, [currentPage, election, selectedSortBy]);
 
   useEffect(() => {
     fetchPartylists();
   }, [fetchPartylists]);
-
-  useEffect(() => {
-    const handleRefresh = (event: Event) => {
-      const customEvent = event as CustomEvent<{ electionId?: string }>;
-      if (!customEvent.detail?.electionId || customEvent.detail.electionId === election.id) {
-        fetchPartylists();
-      }
-    };
-
-    window.addEventListener("election:partylist-refresh", handleRefresh);
-    return () =>
-      window.removeEventListener("election:partylist-refresh", handleRefresh);
-  }, [election.id, fetchPartylists]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -140,7 +129,7 @@ export default function Partylist({ election }: { election: ManageElectionProps 
       setAddDialogOpen(false);
       setNewPartylistName("");
       toast(<p className="text-green-600 text-sm">{res.message}</p>);
-      await fetchPartylists();
+      router.refresh();
     } catch {
       MyToast.error("Failed to add partylist.");
     } finally {
@@ -228,7 +217,6 @@ export default function Partylist({ election }: { election: ManageElectionProps 
               partylists={partylistApi.data}
               isFetchingData={isFetchingData}
               election={election}
-              onUpdated={fetchPartylists}
             />
           </TableBody>
         </Table>

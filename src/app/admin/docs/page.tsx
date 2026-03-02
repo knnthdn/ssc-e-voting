@@ -1,11 +1,26 @@
 const adminRoutes = [
-  { path: "/admin/dashboard", purpose: "View key stats and recent admin activity." },
-  { path: "/admin/election/election-overview", purpose: "Review election summary and records." },
+  {
+    path: "/admin/dashboard",
+    purpose: "View key stats and recent admin activity.",
+  },
+  {
+    path: "/admin/election/election-overview",
+    purpose: "Review election summary and records.",
+  },
   { path: "/admin/election/create", purpose: "Create a new election." },
-  { path: "/admin/election/manage", purpose: "Manage existing elections and open a specific one." },
-  { path: "/admin/system-status", purpose: "Check app/database/auth health and alerts." },
+  {
+    path: "/admin/election/manage",
+    purpose: "Manage existing elections and open a specific one.",
+  },
+  {
+    path: "/admin/system-status",
+    purpose: "Check app/database/auth health and alerts.",
+  },
   { path: "/admin/settings", purpose: "Manage users, roles, and audit logs." },
-  { path: "/admin/docs", purpose: "Read admin documentation and operations guide." },
+  {
+    path: "/admin/docs",
+    purpose: "Read admin documentation and operations guide.",
+  },
 ];
 
 const electionFlow = [
@@ -25,7 +40,8 @@ const electionStatusDetails = [
   },
   {
     status: "SCHEDULED",
-    description: "The election will automatically start based on its start date.",
+    description:
+      "The election will automatically start based on its start date.",
   },
   {
     status: "PAUSED",
@@ -73,6 +89,9 @@ const sections = [
   { id: "overview", label: "Overview" },
   { id: "quick-start", label: "Quick Start" },
   { id: "create-election", label: "Create Election" },
+  { id: "add-candidate", label: "Add Candidate" },
+  { id: "adjust-election-date", label: "Adjust Election Date" },
+  { id: "start-or-toggle-election", label: "Start/Toggle Election" },
   { id: "make-admin", label: "Make User Admin" },
   { id: "admin-routes", label: "Admin Routes" },
   { id: "election-lifecycle", label: "Election Lifecycle" },
@@ -104,7 +123,10 @@ export default function AdminDocsPage() {
         </aside>
 
         <div className="space-y-6">
-          <header id="overview" className="rounded-2xl border bg-white p-6 scroll-mt-24">
+          <header
+            id="overview"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
             <h1 className="text-2xl font-semibold text-brand-100 lg:text-3xl">
               Admin Documentation
             </h1>
@@ -113,8 +135,13 @@ export default function AdminDocsPage() {
             </p>
           </header>
 
-          <article id="quick-start" className="rounded-2xl border bg-white p-6 scroll-mt-24">
-            <h2 className="text-xl font-semibold text-brand-100">Quick Start</h2>
+          <article
+            id="quick-start"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              Quick Start
+            </h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
               <li>Open the admin dashboard and confirm system health.</li>
               <li>Create or review elections before voting starts.</li>
@@ -126,13 +153,16 @@ export default function AdminDocsPage() {
 
           <article
             id="create-election"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               How to Create an Election
             </h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
-              <li>Click <span className="font-semibold">Create</span> under the Election menu.</li>
+              <li>
+                Click <span className="font-semibold">Create</span> under the
+                Election menu.
+              </li>
               <li>
                 Fill in the required fields.
                 <br />
@@ -145,25 +175,124 @@ export default function AdminDocsPage() {
             </ol>
           </article>
 
-          <article id="make-admin" className="rounded-2xl border bg-white p-6 scroll-mt-24">
+          <article
+            id="add-candidate"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              How to Add Candidate
+            </h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
+              <li>
+                Go to <span className="font-mono">Manage</span> under the
+                Election menu.
+              </li>
+              <li>Select an election and click Manage Election.</li>
+              <li>
+                Under the Candidate section, click{" "}
+                <span className="font-semibold">Add Candidate</span>.
+              </li>
+              <li>Fill in the required candidate details and submit.</li>
+              <li>
+                After submitting, the candidate will appear in the Candidate
+                table.
+              </li>
+              <li>
+                You can also update candidate information from the same table.
+              </li>
+            </ol>
+          </article>
+
+          <article
+            id="make-admin"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
             <h2 className="text-xl font-semibold text-brand-100">
               How to Make a User an Admin
             </h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
-              <li>Go to <span className="font-mono">/admin/settings</span>.</li>
+              <li>
+                Go to <span className="font-mono">/admin/settings</span>.
+              </li>
               <li>Open the User Management section.</li>
               <li>Find the user account you want to update.</li>
-              <li>Change the user role to <span className="font-mono">ADMIN</span>.</li>
+              <li>
+                Change the user role to <span className="font-mono">ADMIN</span>
+                .
+              </li>
               <li>Save the update and verify the change in the user list.</li>
             </ol>
           </article>
 
-          <article id="admin-routes" className="rounded-2xl border bg-white p-6 scroll-mt-24">
-            <h2 className="text-xl font-semibold text-brand-100">Admin Routes</h2>
+          <article
+            id="adjust-election-date"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              How to Adjust Election Date
+            </h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
+              <li>
+                Go to <span className="font-mono">Manage</span> under the
+                Election menu.
+              </li>
+              <li>Select an election.</li>
+              <li>Open the Configure tab.</li>
+              <li>
+                Click the date field under Description and set a new date.
+              </li>
+            </ol>
+            <p className="mt-3 text-sm text-slate-600">
+              Note: You cannot adjust the start date if the election is
+              <span className="font-mono"> PENDING </span>
+              or if the election has already started.
+            </p>
+          </article>
+
+          <article
+            id="start-or-toggle-election"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              How to Start or Toggle Election
+            </h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
+              <li>
+                Go to <span className="font-mono">Manage</span> under the
+                Election menu.
+              </li>
+              <li>Select an election.</li>
+              <li>Open Manage Election.</li>
+              <li>
+                Under Election Status, use the controls to start or toggle the
+                election.
+              </li>
+              <li>You can start, pause, stop, or end the election early.</li>
+            </ol>
+            <p className="mt-3 text-sm text-slate-600">
+              Note: Once an election is ended (
+              <span className="font-mono"> COMPLETED </span>) or stopped (
+              <span className="font-mono"> STOPPED </span>), it cannot be
+              reopened.
+            </p>
+          </article>
+
+          <article
+            id="admin-routes"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              Admin Routes
+            </h2>
             <ul className="mt-3 space-y-2 text-slate-700">
               {adminRoutes.map((route) => (
-                <li key={route.path} className="rounded-md border bg-slate-50 p-3">
-                  <p className="font-mono text-sm text-slate-900">{route.path}</p>
+                <li
+                  key={route.path}
+                  className="rounded-md border bg-slate-50 p-3"
+                >
+                  <p className="font-mono text-sm text-slate-900">
+                    {route.path}
+                  </p>
                   <p className="text-sm text-slate-600">{route.purpose}</p>
                 </li>
               ))}
@@ -172,7 +301,7 @@ export default function AdminDocsPage() {
 
           <article
             id="election-lifecycle"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Election Lifecycle
@@ -184,12 +313,22 @@ export default function AdminDocsPage() {
             </ol>
           </article>
 
-          <article id="election-status" className="rounded-2xl border bg-white p-6 scroll-mt-24">
-            <h2 className="text-xl font-semibold text-brand-100">Election Status</h2>
+          <article
+            id="election-status"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              Election Status
+            </h2>
             <ul className="mt-3 space-y-2 text-slate-700">
               {electionStatusDetails.map((item) => (
-                <li key={item.status} className="rounded-md border bg-slate-50 p-3">
-                  <p className="font-mono text-sm text-slate-900">{item.status}</p>
+                <li
+                  key={item.status}
+                  className="rounded-md border bg-slate-50 p-3"
+                >
+                  <p className="font-mono text-sm text-slate-900">
+                    {item.status}
+                  </p>
                   <p className="text-sm text-slate-600">{item.description}</p>
                 </li>
               ))}
@@ -199,7 +338,7 @@ export default function AdminDocsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <article
               id="settings-and-audit"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 Settings & Audit Logs
@@ -207,27 +346,36 @@ export default function AdminDocsPage() {
               <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
                 <li>Manage users and role assignments.</li>
                 <li>Review tracked admin actions in audit logs.</li>
-                <li>Use destructive actions carefully (deletes and vote removals).</li>
+                <li>
+                  Use destructive actions carefully (deletes and vote removals).
+                </li>
               </ul>
             </article>
 
             <article
               id="system-status"
-              className="rounded-2xl border bg-white p-6 scroll-mt-24"
+              className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
             >
               <h2 className="text-xl font-semibold text-brand-100">
                 System Status
               </h2>
               <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
                 <li>Verify database, authentication, and app status.</li>
-                <li>Use alerts to identify integrity or availability issues.</li>
+                <li>
+                  Use alerts to identify integrity or availability issues.
+                </li>
                 <li>Refresh checks after configuration or data changes.</li>
               </ul>
             </article>
           </div>
 
-          <article id="admin-rules" className="rounded-2xl border bg-white p-6 scroll-mt-24">
-            <h2 className="text-xl font-semibold text-brand-100">Admin Rules</h2>
+          <article
+            id="admin-rules"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              Admin Rules
+            </h2>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
               {adminRules.map((rule) => (
                 <li key={rule}>{rule}</li>
@@ -237,14 +385,17 @@ export default function AdminDocsPage() {
 
           <article
             id="troubleshooting"
-            className="rounded-2xl border bg-white p-6 scroll-mt-24"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
           >
             <h2 className="text-xl font-semibold text-brand-100">
               Troubleshooting
             </h2>
             <ul className="mt-3 space-y-3 text-slate-700">
               {troubleshootingItems.map((item) => (
-                <li key={item.issue} className="rounded-md border bg-slate-50 p-3">
+                <li
+                  key={item.issue}
+                  className="rounded-md border bg-slate-50 p-3"
+                >
                   <p className="font-medium text-slate-900">{item.issue}</p>
                   <p className="text-sm text-slate-600">{item.fix}</p>
                 </li>
@@ -253,6 +404,26 @@ export default function AdminDocsPage() {
           </article>
         </div>
       </div>
+      <style>{`
+        .docs-section:target {
+          animation: docsSectionFlash 1.2s ease-out;
+        }
+
+        @keyframes docsSectionFlash {
+          0% {
+            background-color: #fff7ed;
+            box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.3);
+          }
+          45% {
+            background-color: #ffedd5;
+            box-shadow: 0 0 0 10px rgba(251, 146, 60, 0.14);
+          }
+          100% {
+            background-color: #ffffff;
+            box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+          }
+        }
+      `}</style>
     </section>
   );
 }
