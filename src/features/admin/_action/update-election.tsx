@@ -4,7 +4,7 @@ import { checkIfAdmin } from "@/features/admin/_action/manage-election";
 import { Election } from "@/features/admin/_types";
 import { Prisma } from "@/lib/generated/prisma/client";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 type EditElectionType = Pick<
@@ -60,6 +60,8 @@ export async function updateElection(data: EditElectionType) {
     if (newSlug !== data.slug) {
       revalidatePath(`/admin/election/manage/${newSlug}`);
     }
+    revalidateTag("admin-election-list", "max");
+    revalidatePath("/admin/election/manage");
 
     return {
       ok: true,
@@ -93,6 +95,8 @@ export async function deleteElection(id: string) {
     }
 
     await prisma.election.delete({ where: { id } });
+    revalidateTag("admin-election-list", "max");
+    revalidatePath("/admin/election/manage");
 
     return {
       ok: true,
