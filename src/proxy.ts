@@ -52,8 +52,14 @@ export async function proxy(request: NextRequest) {
     needsVoterProfileCheck,
   );
 
-  //* Redirect to /signup when no there's no Session
-  if (!authState?.isAuthenticated) {
+  //* If auth-state lookup fails (network/cold-start/transient issue),
+  //* fail open to avoid infinite redirect loops.
+  if (!authState) {
+    return NextResponse.next();
+  }
+
+  //* Redirect to /signup when there's no session
+  if (!authState.isAuthenticated) {
     if (pathname !== "/register") {
       return NextResponse.redirect(new URL("/register", request.url));
     }
