@@ -8,13 +8,13 @@ export default async function ManagePage({
   searchParams: SearchParams;
 }) {
   const sp = await searchParams;
-  const query = new URLSearchParams();
+  const normalizedSearchParams: Record<string, string | undefined> = {};
 
   for (const [key, value] of Object.entries(sp)) {
-    if (typeof value === "string") query.set(key, value);
+    if (typeof value === "string") {
+      normalizedSearchParams[key] = value;
+    }
   }
 
-  const url = `${process.env.BETTER_AUTH_URL}/api/admin/election?${query.toString()}`;
-
-  return <ManageElectionList url={url} />;
+  return <ManageElectionList searchParams={normalizedSearchParams} />;
 }

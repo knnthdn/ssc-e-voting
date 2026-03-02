@@ -1,22 +1,153 @@
 import { buttonVariants } from "@/components/ui/button";
+import PaginateSelect from "@/components/PaginateSelect";
+import ElectionCard from "@/features/admin/_components/ElectionCard";
+import FilterElection from "@/features/admin/_components/manage/FilterElection";
+import SortByElection from "@/features/admin/_components/manage/SortByElection";
+import { ElectionApi } from "@/features/admin/_types";
+import { ElectionStatus } from "@/lib/generated/prisma/enums";
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import { CirclePlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import ElectionCard from "@/features/admin/_components/ElectionCard";
-import { cookies } from "next/headers";
-import { ElectionApi } from "@/features/admin/_types";
-import FilterElection from "@/features/admin/_components/manage/FilterElection";
-import SortByElection from "@/features/admin/_components/manage/SortByElection";
-import PaginateSelect from "@/components/PaginateSelect";
+type SortBy = "name" | "latest" | "oldest";
 
 const ELECTION_LIST_REVALIDATE_SECONDS = 1800;
 const ELECTION_LIST_TAG = "admin-election-list";
 
-export default async function ManageElectionList({ url }: { url: string }) {
-  const cookieStore = await cookies();
-  const electionCount = await prisma.election.count();
+const getCachedManageElectionData = unstable_cache(
+  async (
+    status: ElectionStatus | undefined,
+    sortBy: SortBy | undefined,
+    page: number,
+    limit: number,
+  ) => {
+    const filter: { status?: ElectionStatus } = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const orderBy: { name?: "asc"; createdAt?: "asc" | "desc" } =
+      sortBy === "name"
+        ? { name: "asc" }
+        : sortBy === "oldest"
+          ? { createdAt: "asc" }
+          : { createdAt: "desc" };
+
+    const electionCount = await prisma.election.count();
+
+    if (electionCount === 0) {
+      return {
+        electionCount,
+        data: {
+          ok: true,
+          message: "No election found",
+          data: [],
+          totalPage: 0,
+          totalItems: 0,
+          page: 1,
+          hasNext: false,
+        } satisfies ElectionApi,
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const election = await prisma.election.findMany({
+      where: filter,
+      orderBy,
+      take: limit,
+      skip,
+    });
+
+    if (election.length === 0) {
+      const totalItems = await prisma.election.count({ where: filter });
+      const totalPage = Math.ceil((totalItems || 0) / limit);
+
+      return {
+        electionCount,
+        data: {
+          ok: false,
+          message: "No election found",
+          data: [],
+          totalPage,
+          totalItems,
+          page,
+          hasNext: page < totalPage,
+        } satisfies ElectionApi,
+      };
+    }
+
+    const totalItems = await prisma.election.count({ where: filter });
+    const totalPage = Math.ceil((totalItems || 0) / limit);
+    const hasNext = page < totalPage;
+
+    const electionWithCounts = await Promise.all(
+      election.map(async (item) => {
+        const [candidateCount, partylistCount] = await Promise.all([
+          prisma.candidate.count({
+            where: {
+              position: {
+                is: {
+                  electionId: item.id,
+                },
+              },
+            },
+          }),
+          prisma.partylist.count({
+            where: {
+              electionId: item.id,
+            },
+          }),
+        ]);
+
+        return {
+          ...item,
+          candidateCount,
+          partylistCount,
+        };
+      }),
+    );
+
+    return {
+      electionCount,
+      data: {
+        ok: true,
+        message: "Election list",
+        data: electionWithCounts,
+        totalPage,
+        totalItems,
+        page,
+        hasNext,
+      } satisfies ElectionApi,
+    };
+  },
+  ["manage-election-list"],
+  {
+    revalidate: ELECTION_LIST_REVALIDATE_SECONDS,
+    tags: [ELECTION_LIST_TAG],
+  },
+);
+
+export default async function ManageElectionList({
+  searchParams,
+}: {
+  searchParams: Record<string, string | undefined>;
+}) {
+  const status = searchParams.status as ElectionStatus | undefined;
+  const sortBy = searchParams.sortBy as SortBy | undefined;
+  const rawPage = Number(searchParams.page ?? "1");
+  const rawLimit = Number(searchParams.limit ?? "26");
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 26;
+
+  const { electionCount, data } = await getCachedManageElectionData(
+    status,
+    sortBy,
+    page,
+    limit,
+  );
 
   if (electionCount === 0)
     return (
@@ -42,21 +173,8 @@ export default async function ManageElectionList({ url }: { url: string }) {
       </div>
     );
 
-  const res = await fetch(url, {
-    headers: {
-      cookie: cookieStore.toString(),
-    },
-    next: {
-      revalidate: ELECTION_LIST_REVALIDATE_SECONDS,
-      tags: [ELECTION_LIST_TAG],
-    },
-  });
-
-  const data: ElectionApi = await res.json();
-
   return (
     <div className="space-y-5">
-      {/* HEADER */}
       <div className="pb-4 s flex flex-col gap-1 sm:flex-row sm:item-center sm:justify-between">
         <h2 className="text-2xl text-brand-100 lg:text-3xl">Election list</h2>
 
@@ -74,7 +192,7 @@ export default async function ManageElectionList({ url }: { url: string }) {
         </div>
       </div>
 
-      {!data.data ? (
+      {!data.data || data.data.length === 0 ? (
         <div>No Items</div>
       ) : (
         <div className="space-y-8 mx-auto md:mx-0 md:grid md:grid-cols-2 md:gap-x-5 2xl:gap-x-8">
