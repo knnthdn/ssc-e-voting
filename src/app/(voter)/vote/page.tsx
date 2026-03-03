@@ -54,26 +54,38 @@ async function FetchElections() {
 
   const visibleElectionIds = visibleElections.map((election) => election.id);
 
-  const positionCounts =
+  const [positionCounts, votedElectionIds] =
     visibleElectionIds.length === 0
-      ? []
-      : await prisma.position.findMany({
-          where: {
-            electionId: {
-              in: visibleElectionIds,
-            },
-          },
-          select: {
-            electionId: true,
-            _count: {
-              select: {
-                canditates: true,
+      ? [[], []]
+      : await Promise.all([
+          prisma.position.findMany({
+            where: {
+              electionId: {
+                in: visibleElectionIds,
               },
             },
-          },
-        });
+            select: {
+              electionId: true,
+              _count: {
+                select: {
+                  canditates: true,
+                },
+              },
+            },
+          }),
+          prisma.vote.findMany({
+            where: {
+              voterId: voter.id,
+              electionId: {
+                in: visibleElectionIds,
+              },
+            },
+            select: { electionId: true },
+            distinct: ["electionId"],
+          }),
+        ]);
 
-  const candidateCountByElectionId = positionCounts.reduce(
+  const candidateCountByElectionId = (positionCounts as typeof positionCounts).reduce(
     (acc, position) => {
       acc.set(
         position.electionId,
@@ -83,20 +95,6 @@ async function FetchElections() {
     },
     new Map<string, number>(),
   );
-
-  const votedElectionIds =
-    visibleElections.length === 0
-      ? []
-      : await prisma.vote.findMany({
-          where: {
-            voterId: voter.id,
-            electionId: {
-              in: visibleElectionIds,
-            },
-          },
-          select: { electionId: true },
-          distinct: ["electionId"],
-        });
 
   const votedElectionIdSet = new Set(
     votedElectionIds.map((item) => item.electionId),
