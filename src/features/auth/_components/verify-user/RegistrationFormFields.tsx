@@ -36,7 +36,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 export default function RegisterFormField() {
@@ -44,9 +44,14 @@ export default function RegisterFormField() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSbmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isRedirecting, startRedirectTransition] = useTransition();
 
   const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch("/vote");
+  }, [router]);
 
   const form = useForm<FormRegistrationInput>({
     resolver: zodResolver(formRegisterSchema),
@@ -56,7 +61,6 @@ export default function RegisterFormField() {
       firstName: "",
       lastName: "",
       address: "",
-      // dateOfBirth: new Date(Date.now()),
       dateOfBirth: new Date(),
       gender: "",
       phoneNumber: "",
@@ -89,7 +93,7 @@ export default function RegisterFormField() {
 
   async function handleSubmitForm(data: FormRegistrationInput) {
     setError(null);
-    setIsSbmitting(true);
+    setIsSubmitting(true);
     const errMsg =
       "Something went wrong while submitting form, Please contact the admins.";
 
@@ -98,19 +102,27 @@ export default function RegisterFormField() {
 
       if (!res.ok) {
         setError(res.message);
+        return;
       }
-      router.replace("/vote");
+
+      startRedirectTransition(() => {
+        router.replace("/vote");
+      });
     } catch {
       MyToast.error(errMsg);
       setError(errMsg);
     } finally {
-      setIsSbmitting(false);
+      setIsSubmitting(false);
     }
   }
 
   return (
     <>
       <LoadingOverlay isLoading={isLoggingOut} text="Logging out..." />
+      <LoadingOverlay
+        isLoading={isSubmitting || isRedirecting}
+        text={isRedirecting ? "Redirecting..." : "Submitting form..."}
+      />
       <Card className="max-w-150 w-full py-10 sm:px-8 sm:py-15">
         <CardHeader>
           {error && <p className="text-red-500 text-lg">ERROR: {error}</p>}
@@ -137,7 +149,7 @@ export default function RegisterFormField() {
                       <FieldLabel htmlFor="firstname">Firstname</FieldLabel>
 
                       <AuthInput
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isRedirecting}
                         {...field}
                         id="firstname"
                         placeholder="Please enter your First name"
@@ -190,7 +202,7 @@ export default function RegisterFormField() {
                         <FieldLabel htmlFor="gender">Gender</FieldLabel>
 
                         <NativeSelect
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || isRedirecting}
                           className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0 "
                           id="gender"
                           {...field}
@@ -228,7 +240,7 @@ export default function RegisterFormField() {
                         <FieldLabel htmlFor="date">Date of birth</FieldLabel>
                         <Popover open={open} onOpenChange={setOpen}>
                           <PopoverTrigger
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || isRedirecting}
                             asChild
                             className="h-10.5 focus-visible:border-brand-light-400 focus-visible:ring-brand-light-400 border-gray-400 focus-visible:ring-1 focus-visible:ring-offset-0   "
                           >
@@ -278,7 +290,7 @@ export default function RegisterFormField() {
                       <FieldLabel htmlFor="address">Address</FieldLabel>
 
                       <AuthInput
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isRedirecting}
                         {...field}
                         id="address"
                         placeholder="Please enter your Address"
@@ -306,7 +318,7 @@ export default function RegisterFormField() {
                       </FieldLabel>
 
                       <AuthInput
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isRedirecting}
                         {...field}
                         id="phoneNumber"
                         placeholder="Please enter your Phone number"
@@ -331,7 +343,7 @@ export default function RegisterFormField() {
                       <FieldLabel htmlFor="school-id">School ID</FieldLabel>
 
                       <AuthInput
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isRedirecting}
                         {...field}
                         id="school-id"
                         placeholder="Please enter your School ID"
@@ -354,15 +366,19 @@ export default function RegisterFormField() {
           <Button
             onClick={handleLogout}
             variant={"outline"}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isRedirecting}
           >
             Logout
           </Button>
 
-          <Button form="register-form" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
+          <Button
+            form="register-form"
+            type="submit"
+            disabled={isSubmitting || isRedirecting}
+          >
+            {isSubmitting || isRedirecting ? (
               <>
-                Submitting
+                {isRedirecting ? "Redirecting" : "Submitting"}
                 <Icon.loading />
               </>
             ) : (
