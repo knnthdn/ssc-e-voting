@@ -72,12 +72,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const election = await prisma.election.findMany({
-      where: filter,
-      orderBy,
-      take: limit,
-      skip,
-    });
+    const [election, totalItems] = await Promise.all([
+      prisma.election.findMany({
+        where: filter,
+        orderBy,
+        take: limit,
+        skip,
+      }),
+      prisma.election.count({
+        where: filter,
+      }),
+    ]);
 
     if (election.length === 0)
       return Response.json(
@@ -85,40 +90,61 @@ export async function GET(req: NextRequest) {
         { status: 404 },
       );
 
-    const totalItems = await prisma.election.count({
-      where: filter,
-    });
-
     const totalPage = Math.ceil((totalItems ? totalItems : 0) / limit);
 
     const hasNext: boolean = page !== totalPage;
 
-    const electionWithCounts = await Promise.all(
-      election.map(async (item) => {
-        const [candidateCount, partylistCount] = await Promise.all([
-          prisma.candidate.count({
-            where: {
-              position: {
-                is: {
-                  electionId: item.id,
-                },
-              },
-            },
-          }),
-          prisma.partylist.count({
-            where: {
-              electionId: item.id,
-            },
-          }),
-        ]);
+    const electionIds = election.map((item) => item.id);
 
-        return {
-          ...item,
-          candidateCount,
-          partylistCount,
-        };
+    const [partylistGroups, positionCounts] = await Promise.all([
+      prisma.partylist.groupBy({
+        by: ["electionId"],
+        where: {
+          electionId: {
+            in: electionIds,
+          },
+        },
+        _count: {
+          _all: true,
+        },
       }),
+      prisma.position.findMany({
+        where: {
+          electionId: {
+            in: electionIds,
+          },
+        },
+        select: {
+          electionId: true,
+          _count: {
+            select: {
+              canditates: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const partylistCountByElectionId = new Map(
+      partylistGroups.map((group) => [group.electionId, group._count._all]),
     );
+
+    const candidateCountByElectionId = positionCounts.reduce(
+      (acc, position) => {
+        acc.set(
+          position.electionId,
+          (acc.get(position.electionId) ?? 0) + position._count.canditates,
+        );
+        return acc;
+      },
+      new Map<string, number>(),
+    );
+
+    const electionWithCounts = election.map((item) => ({
+      ...item,
+      candidateCount: candidateCountByElectionId.get(item.id) ?? 0,
+      partylistCount: partylistCountByElectionId.get(item.id) ?? 0,
+    }));
 
     return Response.json(
       {

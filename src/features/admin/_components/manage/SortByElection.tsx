@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 type SortBy = "name" | "latest" | "oldest";
 
@@ -19,6 +19,7 @@ const SORT_OPTIONS: Array<{ value: SortBy; label: string }> = [
 
 export default function SortByElection() {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -31,7 +32,12 @@ export default function SortByElection() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("sortBy", value);
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+
+    const nextUrl = `${pathname}?${params.toString()}`;
+    startTransition(() => {
+      router.replace(nextUrl, { scroll: false });
+    });
+
     setOpen(false);
   }
 
@@ -54,7 +60,8 @@ export default function SortByElection() {
         {SORT_OPTIONS.map((option) => (
           <button
             key={option.value}
-            className={`text-start cursor-pointer px-3 py-1 ${
+            disabled={isPending}
+            className={`text-start cursor-pointer px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed ${
               option.value === currentSort ? "font-semibold" : ""
             }`}
             onClick={() => updateSort(option.value)}

@@ -1,4 +1,6 @@
 import ManageElectionList from "@/features/admin/_components/manage/ManageElectionList";
+import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
+import { Suspense } from "react";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -8,13 +10,19 @@ export default async function ManagePage({
   searchParams: SearchParams;
 }) {
   const sp = await searchParams;
-  const query = new URLSearchParams();
+  const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(sp)) {
-    if (typeof value === "string") query.set(key, value);
+    if (typeof value === "string") {
+      params.set(key, value);
+    }
   }
 
-  const url = `${process.env.BETTER_AUTH_URL}/api/admin/election?${query.toString()}`;
+  const suspenseKey = params.toString() || "default";
 
-  return <ManageElectionList url={url} />;
+  return (
+    <Suspense key={suspenseKey} fallback={<ElectionLoading />}>
+      <ManageElectionList searchParams={sp} />
+    </Suspense>
+  );
 }

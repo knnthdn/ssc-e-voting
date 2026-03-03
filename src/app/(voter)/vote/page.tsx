@@ -42,37 +42,43 @@ async function FetchElections() {
       },
     },
   });
+
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const visibleElections = activeElection.filter(
     (election) => new Date(election.end) >= sevenDaysAgo,
   );
 
-  const electionWithCounts = await Promise.all(
-    visibleElections.map(async (election) => {
-      const candidateCount = await prisma.candidate.count({
-        where: {
-          position: {
-            electionId: election.id,
-          },
-        },
-      });
+  const visibleElectionIds = visibleElections.map((election) => election.id);
 
-      return {
-        ...election,
-        candidateCount,
-        partylistCount: election._count.partylists,
-      };
-    }),
-  );
-  const electionCountById = new Map(
-    electionWithCounts.map((election) => [
-      election.id,
-      {
-        candidateCount: election.candidateCount,
-        partylistCount: election.partylistCount,
-      },
-    ]),
+  const positionCounts =
+    visibleElectionIds.length === 0
+      ? []
+      : await prisma.position.findMany({
+          where: {
+            electionId: {
+              in: visibleElectionIds,
+            },
+          },
+          select: {
+            electionId: true,
+            _count: {
+              select: {
+                canditates: true,
+              },
+            },
+          },
+        });
+
+  const candidateCountByElectionId = positionCounts.reduce(
+    (acc, position) => {
+      acc.set(
+        position.electionId,
+        (acc.get(position.electionId) ?? 0) + position._count.canditates,
+      );
+      return acc;
+    },
+    new Map<string, number>(),
   );
 
   const votedElectionIds =
@@ -82,7 +88,7 @@ async function FetchElections() {
           where: {
             voterId: voter.id,
             electionId: {
-              in: visibleElections.map((election) => election.id),
+              in: visibleElectionIds,
             },
           },
           select: { electionId: true },
@@ -127,10 +133,8 @@ async function FetchElections() {
               key={index}
               election={{
                 ...items,
-                candidateCount:
-                  electionCountById.get(items.id)?.candidateCount ?? 0,
-                partylistCount:
-                  electionCountById.get(items.id)?.partylistCount ?? 0,
+                candidateCount: candidateCountByElectionId.get(items.id) ?? 0,
+                partylistCount: items._count.partylists,
                 hasVoted: votedElectionIdSet.has(items.id),
               }}
               href={`/vote/${items.slug}`}

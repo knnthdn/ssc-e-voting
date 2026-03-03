@@ -30,32 +30,36 @@ async function FetchResultElections() {
     },
   });
 
-  const electionWithCounts = await Promise.all(
-    resultElections.map(async (election) => {
-      const candidateCount = await prisma.candidate.count({
-        where: {
-          position: {
-            electionId: election.id,
+  const resultElectionIds = resultElections.map((election) => election.id);
+
+  const positionCounts =
+    resultElectionIds.length === 0
+      ? []
+      : await prisma.position.findMany({
+          where: {
+            electionId: {
+              in: resultElectionIds,
+            },
           },
-        },
-      });
+          select: {
+            electionId: true,
+            _count: {
+              select: {
+                canditates: true,
+              },
+            },
+          },
+        });
 
-      return {
-        ...election,
-        candidateCount,
-        partylistCount: election._count.partylists,
-      };
-    }),
-  );
-
-  const electionCountById = new Map(
-    electionWithCounts.map((election) => [
-      election.id,
-      {
-        candidateCount: election.candidateCount,
-        partylistCount: election.partylistCount,
-      },
-    ]),
+  const candidateCountByElectionId = positionCounts.reduce(
+    (acc, position) => {
+      acc.set(
+        position.electionId,
+        (acc.get(position.electionId) ?? 0) + position._count.canditates,
+      );
+      return acc;
+    },
+    new Map<string, number>(),
   );
 
   if (resultElections.length === 0)
@@ -88,10 +92,8 @@ async function FetchResultElections() {
             key={index}
             election={{
               ...items,
-              candidateCount:
-                electionCountById.get(items.id)?.candidateCount ?? 0,
-              partylistCount:
-                electionCountById.get(items.id)?.partylistCount ?? 0,
+              candidateCount: candidateCountByElectionId.get(items.id) ?? 0,
+              partylistCount: items._count.partylists,
               hasVoted: false,
             }}
             href={`/vote-result/${items.slug}`}

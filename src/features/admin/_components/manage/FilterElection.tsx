@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All" },
@@ -22,6 +22,7 @@ const STATUS_OPTIONS = [
 
 export default function FilterElection() {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -38,7 +39,12 @@ export default function FilterElection() {
       params.delete("status");
     }
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+
+    const nextUrl = `${pathname}?${params.toString()}`;
+    startTransition(() => {
+      router.replace(nextUrl, { scroll: false });
+    });
+
     setOpen(false);
   }
 
@@ -62,11 +68,11 @@ export default function FilterElection() {
         {STATUS_OPTIONS.map((option) => (
           <button
             key={option.label}
+            disabled={isPending}
             className={cn(
-              `text-start cursor-pointer px-3 capitalize py-1,`,
+              `text-start cursor-pointer px-3 capitalize py-1, disabled:opacity-50 disabled:cursor-not-allowed`,
               option.value === currentStatus && "text-brand-100",
             )}
-            //  option.value === currentStatus
             onClick={() => updateStatus(option.value)}
           >
             {option.label}
