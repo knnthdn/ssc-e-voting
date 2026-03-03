@@ -176,7 +176,7 @@ export default function VoteResultExportButtons(props: VoteResultExportProps) {
               className="bg-yellow-500 text-white hover:bg-yellow-500/90"
             >
               <Crown className="h-4 w-4" />
-              Winner&apos;s Overview
+              Winner&apos Overview
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
