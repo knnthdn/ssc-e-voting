@@ -23,31 +23,34 @@ async function FetchElections() {
     redirect("/");
   }
 
-  const voter = await prisma.voter.findUnique({
-    where: { voterId: session.user.id },
-    select: { id: true },
-  });
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const [voter, activeElection] = await Promise.all([
+    prisma.voter.findUnique({
+      where: { voterId: session.user.id },
+      select: { id: true },
+    }),
+    prisma.election.findMany({
+      where: {
+        status: "ONGOING",
+        end: { gte: sevenDaysAgo },
+      },
+      include: {
+        _count: {
+          select: {
+            partylists: true,
+          },
+        },
+      },
+    }),
+  ]);
 
   if (!voter) {
     redirect("/");
   }
 
-  const activeElection = await prisma.election.findMany({
-    where: { status: "ONGOING" },
-    include: {
-      _count: {
-        select: {
-          partylists: true,
-        },
-      },
-    },
-  });
-
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const visibleElections = activeElection.filter(
-    (election) => new Date(election.end) >= sevenDaysAgo,
-  );
+  const visibleElections = activeElection;
 
   const visibleElectionIds = visibleElections.map((election) => election.id);
 
