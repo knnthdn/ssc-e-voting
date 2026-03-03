@@ -74,13 +74,12 @@ export default function VotersCandidate({ slug }: { slug: string }) {
     return positions.filter((position) => position === selectedPosition);
   }, [selectedPosition]);
 
-  if (voteState === "voting")
-    return <VotingComponent slug={slug} />;
+  if (voteState === "voting") return <VotingComponent slug={slug} />;
 
   return (
     <div className="px-5 md:px-10 py-5 space-y-8 mt-5">
       <h2 className="text-2xl text-brand-100 lg:text-3xl">
-        Candidate&apos;s Per Position.
+        Candidate&apos;s Per Position Overview.
       </h2>
 
       <div className="flex flex-col gap-10 pb-10">
