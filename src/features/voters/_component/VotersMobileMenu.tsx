@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
 import Link from "next/link";
+import VotersLogoutButton from "@/features/voters/_component/VotersLogoutButton";
 
 type NavItem = {
   label: string;
@@ -38,13 +39,13 @@ export default function VotersMobileMenu({
         </button>
       </DrawerTrigger>
 
-      <DrawerContent className="bg-white">
+      <DrawerContent className="flex h-[100dvh] flex-col bg-white">
         <DrawerHeader>
           <DrawerTitle className="text-brand-100">Menu</DrawerTitle>
           <DrawerDescription>Navigate voter pages quickly.</DrawerDescription>
         </DrawerHeader>
 
-        <nav className="flex flex-col gap-2 px-4 pb-6">
+        <nav className="flex flex-col gap-2 px-4">
           {navs.map((item) => (
             <DrawerClose key={item.path} asChild>
               <Link
@@ -65,6 +66,12 @@ export default function VotersMobileMenu({
             </Link>
           </DrawerClose>
         </nav>
+
+        {isAuthenticated ? (
+          <div className="mt-auto border-t px-4 pb-6 pt-4">
+            <VotersLogoutButton />
+          </div>
+        ) : null}
       </DrawerContent>
     </Drawer>
   );
