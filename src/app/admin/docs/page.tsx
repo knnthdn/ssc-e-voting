@@ -88,6 +88,7 @@ const troubleshootingItems = [
 const sections = [
   { id: "overview", label: "Overview" },
   { id: "quick-start", label: "Quick Start" },
+  { id: "app-flow-chart", label: "App Flow Chart" },
   { id: "create-election", label: "Create Election" },
   { id: "add-candidate", label: "Add Candidate" },
   { id: "adjust-election-date", label: "Adjust Election Date" },
@@ -149,6 +150,62 @@ export default function AdminDocsPage() {
               <li>Monitor ongoing elections and user activity.</li>
               <li>Use settings for role updates and audit review.</li>
             </ol>
+          </article>
+
+          <article
+            id="app-flow-chart"
+            className="docs-section rounded-2xl border bg-white p-6 scroll-mt-24"
+          >
+            <h2 className="text-xl font-semibold text-brand-100">
+              App Flow Chart (Admin and Non-Admin)
+            </h2>
+            <p className="mt-2 text-slate-600">
+              Representational navigation flow of the application.
+            </p>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <h3 className="text-base font-semibold text-slate-900">
+                  Admin Flow
+                </h3>
+                <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-7 text-slate-700">
+{`Login
+  ->
+Auth + Role Check (ADMIN)
+  ->
+/admin/dashboard
+  ->
+/admin/election/create or /admin/election/manage
+  ->
+Manage Election (configure, candidate, partylist, status)
+  ->
+Monitor (/admin/system-status, /admin/settings)
+  ->
+View Results (/vote-result/[electionId] / rankings)`}
+                </pre>
+              </div>
+
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <h3 className="text-base font-semibold text-slate-900">
+                  Non-Admin (Voter) Flow
+                </h3>
+                <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-7 text-slate-700">
+{`Login
+  ->
+Auth + Email Verification Check
+  ->
+Voter Profile Check
+  ->
+/vote (active elections)
+  ->
+/vote/[electionId] (select 1 candidate per position)
+  ->
+Submit Ballot
+  ->
+/vote-history / /vote-result / /vote-ranking`}
+                </pre>
+              </div>
+            </div>
           </article>
 
           <article
