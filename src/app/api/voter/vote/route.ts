@@ -2,6 +2,7 @@ import { getSession } from "@/actions/auth-actions";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getEffectiveElectionStatus } from "@/lib/election-status";
 import prisma from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 
 type VoteItem = {
   positionId: string;
@@ -173,8 +174,11 @@ export async function POST(req: Request) {
     );
   }
 
+  revalidateTag("statistic", "max");
+
   return Response.json(
     { ok: true, message: "Vote submitted successfully." },
     { status: 200 },
   );
 }
+

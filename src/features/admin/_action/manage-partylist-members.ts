@@ -2,7 +2,7 @@
 
 import { checkIfAdmin } from "@/features/admin/_action/manage-election";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 type ReturnType = Promise<{ ok: boolean; message: string }>;
 
@@ -126,3 +126,5 @@ export async function removeMemberFromPartylist(data: Input): ReturnType {
     return { ok: false, message: "internal Server Error" };
   }
 }
+
+

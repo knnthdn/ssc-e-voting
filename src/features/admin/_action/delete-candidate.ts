@@ -2,7 +2,7 @@
 
 import { checkIfAdmin } from "@/features/admin/_action/manage-election";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 type ReturnType = Promise<{ ok: boolean; message: string }>;
 
@@ -55,9 +55,12 @@ export default async function deleteCandidate(
     });
 
     revalidatePath(`/admin/election/manage/${slug}`);
+    revalidateTag("statistic", "max");
     return { ok: true, message: "Candidate deleted successfully" };
   } catch (error) {
     console.log(error);
     return { ok: false, message: "internal Server Error" };
   }
 }
+
+

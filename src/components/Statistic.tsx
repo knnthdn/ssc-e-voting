@@ -4,6 +4,7 @@ import StatisticVoteTimeFilter from "@/components/StatisticVoteTimeFilter";
 import StatisticRefreshButton from "@/components/StatisticRefreshButton";
 import Image from "next/image";
 import { BarChart3, CalendarDays, Crown } from "lucide-react";
+import { unstable_cache } from "next/cache";
 
 export const revalidate = 0;
 
@@ -111,19 +112,6 @@ async function getStatisticData(
   if (!election) return null;
 
   const voteTimeStart = getVoteTimeStart(voteTime ?? "all");
-  const uniqueVoters = await prisma.vote.findMany({
-    where: {
-      electionId: election.id,
-      ...(voteTimeStart ? { createdAt: { gte: voteTimeStart } } : {}),
-    },
-    select: {
-      voterId: true,
-    },
-    distinct: ["voterId"],
-  });
-
-  const totalVotes = uniqueVoters.length;
-
   const normalizedPositionName = normalizePositionFilter(positionName);
 
   const positions = normalizedPositionName
@@ -132,61 +120,100 @@ async function getStatisticData(
           position.name.toUpperCase() === normalizedPositionName.toUpperCase(),
       )
     : election.positions;
+  const positionIds = positions.map((position) => position.id);
 
-  const blocks = await Promise.all(
-    positions.map(async (position) => {
-      const grouped = await prisma.vote.groupBy({
-        by: ["candidateId"],
-        where: {
-          electionId: election.id,
-          positionId: position.id,
-          ...(voteTimeStart ? { createdAt: { gte: voteTimeStart } } : {}),
-        },
-        _count: {
-          candidateId: true,
-        },
-        orderBy: {
+  const [uniqueVoters, groupedVotes, candidates] = await Promise.all([
+    prisma.vote.findMany({
+      where: {
+        electionId: election.id,
+        ...(voteTimeStart ? { createdAt: { gte: voteTimeStart } } : {}),
+      },
+      select: {
+        voterId: true,
+      },
+      distinct: ["voterId"],
+    }),
+    positionIds.length === 0
+      ? Promise.resolve([])
+      : prisma.vote.groupBy({
+          by: ["positionId", "candidateId"],
+          where: {
+            electionId: election.id,
+            positionId: {
+              in: positionIds,
+            },
+            ...(voteTimeStart ? { createdAt: { gte: voteTimeStart } } : {}),
+          },
           _count: {
-            candidateId: "desc",
+            candidateId: true,
           },
-        },
-      });
-
-      const candidates = await prisma.candidate.findMany({
-        where: { positionId: position.id },
-        select: {
-          id: true,
-          fullName: true,
-          image: true,
-          partylist: {
-            select: { name: true },
+        }),
+    positionIds.length === 0
+      ? Promise.resolve([])
+      : prisma.candidate.findMany({
+          where: {
+            positionId: {
+              in: positionIds,
+            },
           },
-        },
-        orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      });
+          select: {
+            id: true,
+            fullName: true,
+            image: true,
+            positionId: true,
+            partylist: {
+              select: { name: true },
+            },
+          },
+          orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+        }),
+  ]);
 
-      const voteCountByCandidateId = new Map(
-        grouped.map((item) => [item.candidateId, item._count.candidateId]),
-      );
-      const sortedCandidates = candidates
-        .map((candidate) => ({
-          ...candidate,
-          votes: voteCountByCandidateId.get(candidate.id) ?? 0,
-        }))
-        .sort(
-          (a, b) => b.votes - a.votes || a.fullName.localeCompare(b.fullName),
-        );
-      const maxVotes =
-        sortedCandidates.length > 0 ? sortedCandidates[0].votes : 1;
+  const totalVotes = uniqueVoters.length;
+  const voteCountByKey = new Map(
+    groupedVotes.map((item) => [
+      `${item.positionId}:${item.candidateId}`,
+      item._count.candidateId,
+    ]),
+  );
 
-      const allRankedCandidates: RankedCandidate[] = [];
+  const candidatesByPosition = candidates.reduce(
+    (acc, candidate) => {
+      const list = acc.get(candidate.positionId) ?? [];
+      list.push(candidate);
+      acc.set(candidate.positionId, list);
+      return acc;
+    },
+    new Map<
+      string,
+      Array<{
+        id: string;
+        fullName: string;
+        image: string | null;
+        positionId: string;
+        partylist: { name: string } | null;
+      }>
+    >(),
+  );
 
-      sortedCandidates.forEach((candidate, index) => {
+  const blocks = positions.map((position) => {
+    const positionCandidates = candidatesByPosition.get(position.id) ?? [];
+    const sortedCandidates = positionCandidates
+      .map((candidate) => ({
+        ...candidate,
+        votes: voteCountByKey.get(`${position.id}:${candidate.id}`) ?? 0,
+      }))
+      .sort((a, b) => b.votes - a.votes || a.fullName.localeCompare(b.fullName));
+
+    const maxVotes = sortedCandidates.length > 0 ? sortedCandidates[0].votes : 1;
+
+    const allRankedCandidates: RankedCandidate[] = sortedCandidates.map(
+      (candidate, index) => {
         const votes = candidate.votes;
         const progress =
           votes === 0 ? 6 : Math.max(Math.round((votes / maxVotes) * 100), 6);
 
-        allRankedCandidates.push({
+        return {
           id: candidate.id,
           rank: index + 1,
           name: candidate.fullName,
@@ -195,24 +222,23 @@ async function getStatisticData(
           votes,
           progress,
           accent: "gold",
-        });
-      });
+        };
+      },
+    );
 
-      const hasLessThanFive = candidates.length < 5;
-      const title = hasLessThanFive
-        ? `Top Candidates - ${position.name}`
-        : `Top 5 Candidates - ${position.name}`;
-      const topCandidates = allRankedCandidates.slice(0, 5);
+    const hasLessThanFive = positionCandidates.length < 5;
+    const title = hasLessThanFive
+      ? `Top Candidates - ${position.name}`
+      : `Top 5 Candidates - ${position.name}`;
 
-      return {
-        positionName: position.name,
-        title,
-        subtitle: `${position.name} - ${election.name}`,
-        topCandidates,
-        allCandidates: allRankedCandidates,
-      };
-    }),
-  );
+    return {
+      positionName: position.name,
+      title,
+      subtitle: `${position.name} - ${election.name}`,
+      topCandidates: allRankedCandidates.slice(0, 5),
+      allCandidates: allRankedCandidates,
+    };
+  });
 
   return {
     electionName: election.name,
@@ -221,6 +247,19 @@ async function getStatisticData(
     blocks,
   };
 }
+
+const getCachedStatisticData = unstable_cache(
+  async (
+    electionSlug?: string,
+    positionName?: string,
+    voteTime?: VoteTimeFilter,
+  ) => getStatisticData(electionSlug, positionName, voteTime),
+  ["statistic-data"],
+  {
+    revalidate: 30,
+    tags: ["statistic"],
+  },
+);
 
 function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
   return (
@@ -297,7 +336,7 @@ export default async function Statistic({
 
   const normalizedVoteTime = normalizeVoteTime(voteTime);
 
-  const data = await getStatisticData(
+  const data = await getCachedStatisticData(
     electionSlug,
     normalizedPositionName,
     normalizedVoteTime,
@@ -404,7 +443,13 @@ export default async function Statistic({
             {block.subtitle}
           </p>
 
-          <CandidateTable candidates={block.topCandidates} />
+          {block.allCandidates.length === 0 ? (
+            <div className="mt-4 rounded-2xl border bg-slate-50 p-4 text-sm text-slate-600 sm:mt-5 sm:text-base">
+              No current candidates for this position.
+            </div>
+          ) : (
+            <CandidateTable candidates={block.topCandidates} />
+          )}
 
           {block.allCandidates.length > 5 && (
             <details className="group rounded-xl border border-slate-200 px-4 py-3">

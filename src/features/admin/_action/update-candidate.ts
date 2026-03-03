@@ -4,7 +4,7 @@ import { checkIfAdmin } from "@/features/admin/_action/manage-election";
 import { Candidate } from "@/features/admin/_types";
 import { Gender } from "@/lib/generated/prisma/enums";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 type ReturnType = Promise<{ ok: boolean; message: string }>;
 
@@ -70,9 +70,12 @@ export default async function updateCandidate(
     });
 
     revalidatePath(`/admin/election/manage/${slug}`);
+    revalidateTag("statistic", "max");
     return { ok: true, message: "Candidate updated successfully" };
   } catch (error) {
     console.log(error);
     return { ok: false, message: "internal Server Error" };
   }
 }
+
+
