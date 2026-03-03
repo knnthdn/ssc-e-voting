@@ -203,9 +203,12 @@ async function getStatisticData(
         ...candidate,
         votes: voteCountByKey.get(`${position.id}:${candidate.id}`) ?? 0,
       }))
-      .sort((a, b) => b.votes - a.votes || a.fullName.localeCompare(b.fullName));
+      .sort(
+        (a, b) => b.votes - a.votes || a.fullName.localeCompare(b.fullName),
+      );
 
-    const maxVotes = sortedCandidates.length > 0 ? sortedCandidates[0].votes : 1;
+    const maxVotes =
+      sortedCandidates.length > 0 ? sortedCandidates[0].votes : 1;
 
     const allRankedCandidates: RankedCandidate[] = sortedCandidates.map(
       (candidate, index) => {
@@ -269,7 +272,7 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
           key={candidate.id}
           className="flex flex-col gap-3 border-b bg-white p-3 last:border-b-0 sm:p-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
         >
-          <div className="flex w-full items-center gap-3 lg:min-w-[280px] lg:flex-1">
+          <div className="flex w-full items-center gap-3 lg:min-w-70 lg:flex-1">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-sm font-bold text-white sm:h-10 sm:w-10 sm:text-xl">
               {candidate.rank}
             </span>
@@ -305,7 +308,7 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
             </div>
           </div>
 
-          <div className="flex w-full items-center gap-3 lg:min-w-[220px] lg:flex-1">
+          <div className="flex w-full items-center gap-3 lg:min-w-55 lg:flex-1">
             <div className="h-4 w-full rounded-full bg-amber-50">
               <div
                 className={`h-full rounded-full ${barClass()}`}
@@ -314,7 +317,7 @@ function CandidateTable({ candidates }: { candidates: RankedCandidate[] }) {
             </div>
           </div>
 
-          <div className="w-full text-left lg:w-[110px] lg:text-right">
+          <div className="w-full text-left lg:w-27.5 lg:text-right">
             <p className="text-2xl font-semibold text-slate-900 sm:text-3xl lg:text-4xl">
               {candidate.votes}
             </p>
