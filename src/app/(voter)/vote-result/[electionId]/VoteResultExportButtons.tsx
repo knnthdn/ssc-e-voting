@@ -181,7 +181,7 @@ export default function VoteResultExportButtons(props: VoteResultExportProps) {
           </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Election Winner&apos;s Overview</DialogTitle>
+              <DialogTitle>Election Winner Overview</DialogTitle>
               <DialogDescription>
                 Position-by-position winners. Entries marked with TIE have
                 multiple top candidates.
