@@ -8,52 +8,10 @@ type MiddlewareAuthState = {
   hasVoterProfile: boolean;
 };
 
-type CachedAuthState = {
-  value: MiddlewareAuthState | null;
-  expiresAt: number;
-};
-
-const AUTH_STATE_CACHE_TTL_MS = 3000;
-const authStateCache = new Map<string, CachedAuthState>();
-
-function getAuthCacheKey(
-  request: NextRequest,
-  includeVoterProfile: boolean,
-): string {
-  const cookie = request.headers.get("cookie") ?? "";
-  return `${includeVoterProfile ? "1" : "0"}:${cookie}`;
-}
-
-function getCachedAuthState(key: string): MiddlewareAuthState | null | undefined {
-  const cached = authStateCache.get(key);
-  if (!cached) return undefined;
-
-  if (Date.now() > cached.expiresAt) {
-    authStateCache.delete(key);
-    return undefined;
-  }
-
-  return cached.value;
-}
-
-function setCachedAuthState(key: string, value: MiddlewareAuthState | null) {
-  authStateCache.set(key, {
-    value,
-    expiresAt: Date.now() + AUTH_STATE_CACHE_TTL_MS,
-  });
-}
-
 async function getMiddlewareAuthState(
   request: NextRequest,
   includeVoterProfile: boolean,
 ): Promise<MiddlewareAuthState | null> {
-  const cacheKey = getAuthCacheKey(request, includeVoterProfile);
-  const cachedState = getCachedAuthState(cacheKey);
-
-  if (cachedState !== undefined) {
-    return cachedState;
-  }
-
   try {
     const endpoint = new URL("/api/auth/voter-profile-status", request.url);
     endpoint.searchParams.set(
@@ -72,22 +30,16 @@ async function getMiddlewareAuthState(
       },
     );
 
-    if (!response.ok) {
-      setCachedAuthState(cacheKey, null);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = (await response.json()) as Partial<MiddlewareAuthState>;
-    const normalized = {
+    return {
       isAuthenticated: Boolean(data.isAuthenticated),
       emailVerified: Boolean(data.emailVerified),
       role: data.role === "ADMIN" || data.role === "VOTER" ? data.role : null,
       hasVoterProfile: Boolean(data.hasVoterProfile),
     };
-    setCachedAuthState(cacheKey, normalized);
-    return normalized;
   } catch {
-    setCachedAuthState(cacheKey, null);
     return null;
   }
 }

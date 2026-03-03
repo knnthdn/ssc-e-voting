@@ -15,8 +15,15 @@ export async function sendFormRegistration(
   const gender = data.gender.toUpperCase() as Gender;
 
   try {
-    await prisma.voter.create({
-      data: {
+    await prisma.voter.upsert({
+      where: {
+        voterId: session.user.id,
+      },
+      update: {
+        ...data,
+        gender,
+      },
+      create: {
         ...data,
         gender,
         voterId: session.user.id,
