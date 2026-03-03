@@ -18,7 +18,7 @@ export default async function VotersElectionId({
     redirect("/");
   }
 
-  const [voter, election] = await Promise.all([
+  const [voter, election, existingVote] = await Promise.all([
     prisma.voter.findUnique({
       where: { voterId: session.user.id },
       select: { id: true },
@@ -26,6 +26,21 @@ export default async function VotersElectionId({
     prisma.election.findUnique({
       where: { slug: electionId },
       select: { id: true, status: true, start: true, end: true },
+    }),
+    prisma.vote.findFirst({
+      where: {
+        voter: {
+          is: {
+            voterId: session.user.id,
+          },
+        },
+        election: {
+          is: {
+            slug: electionId,
+          },
+        },
+      },
+      select: { id: true },
     }),
   ]);
 
@@ -40,14 +55,6 @@ export default async function VotersElectionId({
   ) {
     redirect("/vote");
   }
-
-  const existingVote = await prisma.vote.findFirst({
-    where: {
-      voterId: voter.id,
-      electionId: election.id,
-    },
-    select: { id: true },
-  });
 
   if (existingVote) {
     redirect("/vote");
