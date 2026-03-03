@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 type CandidateType = {
   id: string;
@@ -67,6 +67,7 @@ type VotingComponentProps = {
 
 export default function VotingComponent({ slug }: VotingComponentProps) {
   const router = useRouter();
+  const [isRedirecting, startRedirectTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessPopover, setShowSuccessPopover] = useState(false);
@@ -80,6 +81,10 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
   const [selectedByPosition, setSelectedByPosition] = useState<
     Record<string, string>
   >({});
+
+  useEffect(() => {
+    router.prefetch("/vote");
+  }, [router]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -346,13 +351,15 @@ export default function VotingComponent({ slug }: VotingComponentProps) {
             </DialogDescription>
           </DialogHeader>
           <Button
+            disabled={isRedirecting}
             onClick={() => {
               setShowSuccessPopover(false);
-              router.push("/vote");
-              router.refresh();
+              startRedirectTransition(() => {
+                router.replace("/vote");
+              });
             }}
           >
-            Go to Vote List
+            {isRedirecting ? "Redirecting..." : "Go to Vote List"}
           </Button>
         </DialogContent>
       </Dialog>
