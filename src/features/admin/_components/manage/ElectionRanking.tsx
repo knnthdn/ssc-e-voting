@@ -15,14 +15,18 @@ export default function ElectionRanking({
   voteTime?: string;
 }) {
   const suspenseKey = `${slug}:${positionName ?? "all"}:${voteTime ?? "all"}`;
+  const statusMessage =
+    status === "COMPLETED"
+      ? "Election is ended."
+      : status === "STOPPED"
+        ? "Election is stopped."
+        : `Election is currently ${status}.`;
 
   return (
     <div className="space-y-2">
       {status !== "ONGOING" && (
         <div className="space-y-2 px-8 pt-4">
-          <p className="text-sm text-slate-600">
-            Election is currently <span className="font-medium">{status}</span>.
-          </p>
+          <p className="text-sm text-slate-600">{statusMessage}</p>
 
           <div className="space-x-2">
             <span>Status:</span>
