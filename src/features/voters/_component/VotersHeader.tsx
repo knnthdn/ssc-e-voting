@@ -54,6 +54,8 @@ export default async function VotersHeader() {
         <VotersMobileMenu
           navs={visibleNavs}
           isAuthenticated={Boolean(session)}
+          userName={session?.user.name}
+          userImage={session?.user.image}
         />
 
         {/* NAV BUTTONS (LARGE SCREEN) */}

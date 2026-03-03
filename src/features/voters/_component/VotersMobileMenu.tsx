@@ -10,6 +10,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import VotersLogoutButton from "@/features/voters/_component/VotersLogoutButton";
 
@@ -21,12 +22,18 @@ type NavItem = {
 type VotersMobileMenuProps = {
   navs: NavItem[];
   isAuthenticated: boolean;
+  userName?: string;
+  userImage?: string | null;
 };
 
 export default function VotersMobileMenu({
   navs,
   isAuthenticated,
+  userName,
+  userImage,
 }: VotersMobileMenuProps) {
+  const displayName = userName?.trim() || "Voter";
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -44,6 +51,24 @@ export default function VotersMobileMenu({
           <DrawerTitle className="text-brand-100">Menu</DrawerTitle>
           <DrawerDescription>Navigate voter pages quickly.</DrawerDescription>
         </DrawerHeader>
+
+        {isAuthenticated ? (
+          <div className="mb-3 px-4">
+            <div className="flex items-center gap-3 rounded-lg border bg-slate-50 px-3 py-3">
+              <div className="relative size-9">
+                <Image
+                  alt="Voter profile"
+                  src={userImage || "/male-default-profile.png"}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <p className="text-sm font-medium text-slate-800">
+                {displayName}
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         <nav className="flex flex-col gap-2 px-4">
           {navs.map((item) => (
