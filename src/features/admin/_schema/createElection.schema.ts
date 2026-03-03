@@ -7,12 +7,12 @@ export const createElectionSchema = z
     name: z
       .string()
       .min(5, "Election name must have atleast 5 character")
-      .max(50, "Election name must be less than 50 characters"),
+      .max(100, "Election name must be less than 100 characters"),
     status: electionStatusSchema,
     description: z
       .string()
       .min(5, "Election description must have atleast 5 character")
-      .max(50, "Election description must be less than 50 characters"),
+      .max(1000, "Election description must be less than 1000 characters"),
     start: z.date(),
     end: z.date(),
   })

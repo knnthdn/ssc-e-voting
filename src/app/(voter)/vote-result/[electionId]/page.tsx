@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
 import { Crown, Medal } from "lucide-react";
 import Image from "next/image";
+import VoteResultExportButtons from "./VoteResultExportButtons";
 
 type VoteResultPageProps = {
   params: Promise<{ electionId: string }>;
@@ -172,6 +173,37 @@ export default async function VoteResultByElectionPage({
           >
             {election.status}
           </Badge>
+        </div>
+        <div className="mt-4">
+          <VoteResultExportButtons
+            electionName={election.name}
+            electionStatus={election.status}
+            totalVotes={totalVoterVotes}
+            generatedAt={new Date().toLocaleString("en-PH", {
+              timeZone: "Asia/Manila",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
+            positions={positions.map((position) => ({
+              name: position.name,
+              totalPositionVotes: position.totalPositionVotes,
+              isTie: position.isTie,
+              winners: position.winners.map((winner) => winner.fullName),
+              rankedCandidates: position.rankedCandidates.map((candidate) => ({
+                fullName: candidate.fullName,
+                partylistName: candidate.partylistName,
+                votes: candidate.votes,
+                percentage: percentage(
+                  candidate.votes,
+                  position.totalPositionVotes,
+                ),
+              })),
+            }))}
+          />
         </div>
       </div>
 

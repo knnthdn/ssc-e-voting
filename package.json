@@ -7,7 +7,10 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:election-example": "tsx script/seed-election-example.ts",
+    "seed:cleanup-example": "tsx script/cleanup-seed-election-example.ts",
+    "seed:election-existing-voters": "tsx script/seed-election-existing-voters.ts"
   },
   "dependencies": {
     "@arcjet/inspect": "^1.0.0-beta.17",
