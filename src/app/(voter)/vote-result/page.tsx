@@ -79,7 +79,7 @@ async function FetchResultElections() {
     );
 
   return (
-    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10">
+    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10 pb-5">
       <h2 className="text-2xl text-brand-100 lg:text-3xl">Eelction Results</h2>
 
       <div className="space-y-8 mx-auto md:mx-0 md:grid md:grid-cols-2 md:gap-x-5 2xl:gap-x-8">

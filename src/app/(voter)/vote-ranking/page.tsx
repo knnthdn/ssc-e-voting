@@ -63,7 +63,7 @@ async function FetchRankingElections() {
 
   if (visibleElections.length === 0)
     return (
-      <div className="h-full w-full grid place-content-center">
+      <div className="h-full w-full grid place-content-center ">
         <div className="flex flex-col justify-center items-center">
           <div className="relative h-37.5 w-75 xl:h-50 xl:w-87.5">
             <Image
@@ -82,7 +82,7 @@ async function FetchRankingElections() {
     );
 
   return (
-    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10">
+    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10 pb-5">
       <h2 className="text-2xl text-brand-100 lg:text-3xl">
         Active Election Vote Ranking
       </h2>
@@ -93,8 +93,10 @@ async function FetchRankingElections() {
             key={index}
             election={{
               ...items,
-              candidateCount: electionCountById.get(items.id)?.candidateCount ?? 0,
-              partylistCount: electionCountById.get(items.id)?.partylistCount ?? 0,
+              candidateCount:
+                electionCountById.get(items.id)?.candidateCount ?? 0,
+              partylistCount:
+                electionCountById.get(items.id)?.partylistCount ?? 0,
               hasVoted: false,
             }}
             href={`/vote-ranking/${items.slug}`}
