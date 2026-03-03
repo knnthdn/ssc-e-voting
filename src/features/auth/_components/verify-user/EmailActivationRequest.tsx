@@ -109,13 +109,7 @@ export default function EmailActivationRequest({
         </p>
 
         <p className="text-sm">
-          Having trouble activating your account? Contact{" "}
-          <Link
-            href={"mailto:support@getpingshipped.com"}
-            className="underline"
-          >
-            support@getpingshipped.com
-          </Link>
+          Having trouble activating your account? Please look for the admin
         </p>
       </CardFooter>
     </Card>

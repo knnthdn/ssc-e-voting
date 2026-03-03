@@ -304,7 +304,7 @@ export default async function VoteResultByElectionPage({
                       <div className="flex items-center gap-3">
                         <div className="h-2.5 w-full rounded-full bg-slate-100">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500"
+                            className="h-full rounded-full bg-linear-to-r from-amber-300 to-amber-500"
                             style={{ width: `${progress}%` }}
                           />
                         </div>

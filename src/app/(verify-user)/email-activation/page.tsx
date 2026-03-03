@@ -13,6 +13,7 @@ import Link from "next/link";
 import EmailActivationRequest from "@/features/auth/_components/verify-user/EmailActivationRequest";
 import { getSession, Session } from "@/actions/auth-actions";
 import { env } from "@/lib/config";
+import VotersLogoutButton from "@/features/voters/_component/VotersLogoutButton";
 
 export default async function EmailActivationPage({
   searchParams,
@@ -51,6 +52,11 @@ function ToConfirm({ session }: { session: Session }) {
       </CardHeader>
 
       <CardContent>
+        <p className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Note: If you confirm your email on another device or browser, please
+          logout and login again on this device to refresh your session.
+        </p>
+
         <p className="mb-1 font-medium">Shortcut:</p>
         <div className="grid w-full gap-2 sm:grid-cols-2 2xl:gap-4">
           <Link
@@ -74,15 +80,19 @@ function ToConfirm({ session }: { session: Session }) {
       </CardContent>
 
       <CardFooter>
-        <p>
-          Can&apos;t find the email? Check your spam or{" "}
-          <Link
-            href={"/email-activation?v=r"}
-            className="text-brand-light-100 underline"
-          >
-            Resend activation email
-          </Link>
-        </p>
+        <div className="w-full space-y-3">
+          <p>
+            Can&apos;t find the email? Check your spam or{" "}
+            <Link
+              href={"/email-activation?v=r"}
+              className="text-brand-light-100 underline"
+            >
+              Resend activation email
+            </Link>
+          </p>
+
+          <VotersLogoutButton />
+        </div>
       </CardFooter>
     </Card>
   );
