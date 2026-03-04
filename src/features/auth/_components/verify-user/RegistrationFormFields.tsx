@@ -107,7 +107,17 @@ export default function RegisterFormField() {
 
       startRedirectTransition(() => {
         router.replace("/vote");
+        router.refresh();
       });
+
+      //* Fallback for intermittent client-navigation stalls:
+      //* if we are still on register-form shortly after success,
+      //* force a full navigation to keep UX deterministic.
+      setTimeout(() => {
+        if (window.location.pathname.startsWith("/register-form")) {
+          window.location.replace("/vote");
+        }
+      }, 900);
     } catch {
       MyToast.error(errMsg);
       setError(errMsg);
