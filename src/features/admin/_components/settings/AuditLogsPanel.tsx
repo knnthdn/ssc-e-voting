@@ -150,13 +150,13 @@ export default async function AuditLogsPanel({
                           {log.type}
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-72 truncate px-4 py-3">
+                      <TableCell className="max-w-56 whitespace-normal break-words px-4 py-3">
                         {log.actor}
                       </TableCell>
-                      <TableCell className="max-w-72 truncate px-4 py-3">
+                      <TableCell className="max-w-56 whitespace-normal break-words px-4 py-3">
                         {log.target}
                       </TableCell>
-                      <TableCell className="max-w-[480px] truncate px-4 py-3 text-slate-700">
+                      <TableCell className="max-w-64 whitespace-normal break-words px-4 py-3 text-slate-700">
                         {log.details}
                       </TableCell>
                     </TableRow>

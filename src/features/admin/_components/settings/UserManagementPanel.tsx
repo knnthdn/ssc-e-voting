@@ -410,7 +410,7 @@ export default async function UserManagementPanel({
                     <TableHead className="px-4 py-3">Email Verified</TableHead>
                     <TableHead className="px-4 py-3">Role</TableHead>
                     <TableHead className="px-4 py-3">Voters</TableHead>
-                    <TableHead className="w-[280px] px-4 py-3">Actions</TableHead>
+                    <TableHead className="w-[320px] px-4 py-3">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -431,7 +431,7 @@ export default async function UserManagementPanel({
                         <TableCell className="px-4 py-3 font-medium">
                           {user.name}
                         </TableCell>
-                        <TableCell className="max-w-80 truncate px-4 py-3 text-slate-700">
+                        <TableCell className="max-w-64 whitespace-normal break-words px-4 py-3 text-slate-700">
                           {user.email}
                         </TableCell>
                         <TableCell className="px-4 py-3">
@@ -477,13 +477,13 @@ export default async function UserManagementPanel({
 
                             <form
                               action={deleteUserElectionVote}
-                              className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto]"
+                              className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
                             >
                               <input type="hidden" name="userId" value={user.id} />
                               <select
                                 name="electionId"
                                 defaultValue=""
-                                className="h-9 max-w-full rounded-md border border-slate-300 bg-white px-2 text-sm sm:max-w-56"
+                                className="h-9 min-w-0 w-full rounded-md border border-slate-300 bg-white px-2 text-sm"
                                 disabled={electionOptions.length === 0}
                               >
                                 <option value="" disabled>

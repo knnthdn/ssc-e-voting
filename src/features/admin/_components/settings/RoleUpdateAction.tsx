@@ -63,7 +63,11 @@ export default function RoleUpdateAction({
 
   return (
     <>
-      <form ref={formRef} id={formId} className="grid grid-cols-[minmax(0,160px)_auto] items-center gap-2">
+      <form
+        ref={formRef}
+        id={formId}
+        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
+      >
         <input type="hidden" name="userId" value={userId} />
         <input type="hidden" name="role" value={selectedRole} />
 
