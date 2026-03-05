@@ -113,6 +113,12 @@ export default function VotersCard({
           );
         })}
       </div>
+
+      {candidates.length === 0 && (
+        <div className="rounded-md border border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm text-brand-700">
+          No candidates available for this position yet.
+        </div>
+      )}
     </div>
   );
 }

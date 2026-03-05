@@ -9,6 +9,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import VotersChangePasswordDialog from "@/features/voters/_component/VotersChangePasswordDialog";
 import VotersLogoutButton from "@/features/voters/_component/VotersLogoutButton";
+import VotersUpdateProfile from "@/features/voters/_component/VotersUpdateProfile";
 import prisma from "@/lib/prisma";
 import { History, Key } from "lucide-react";
 import Image from "next/image";
@@ -32,6 +33,10 @@ export default async function VotersProfile() {
   const voters = await prisma.voter.findUnique({
     where: { voterId: session.user.id },
   });
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { image: true },
+  });
 
   return (
     <>
@@ -49,8 +54,8 @@ export default async function VotersProfile() {
               <Image
                 alt="Voters Profile"
                 src={
-                  session.user?.image
-                    ? session.user?.image
+                  user?.image
+                    ? user.image
                     : voters.gender === "MALE"
                       ? "/male-default-profile.png"
                       : "/female-default-profile.png"
@@ -77,6 +82,18 @@ export default async function VotersProfile() {
                 <History size={20} />
                 Vote history
               </Link>
+
+              <VotersUpdateProfile
+                voter={{
+                  firstName: voters.firstName,
+                  lastName: voters.lastName,
+                  dateOfBirth: voters.dateOfBirth.toISOString(),
+                  gender: voters.gender,
+                  address: voters.address,
+                  phoneNumber: voters.phoneNumber,
+                  schoolId: voters.schoolId,
+                }}
+              />
 
               <VotersChangePasswordDialog />
 

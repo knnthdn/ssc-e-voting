@@ -1,8 +1,12 @@
 import { getSession } from "@/actions/auth-actions";
+import { Card, CardContent } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import ElectionCard from "@/features/admin/_components/ElectionCard";
 import ElectionLoading from "@/features/admin/_components/manage/ElectionLoading";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
+import { CheckCircle2, Clock3, ListChecks } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
@@ -33,7 +37,9 @@ async function FetchElections() {
     }),
     prisma.election.findMany({
       where: {
-        status: "ONGOING",
+        status: {
+          in: ["ONGOING", "PAUSED"],
+        },
         end: { gte: sevenDaysAgo },
       },
       include: {
@@ -85,20 +91,22 @@ async function FetchElections() {
           }),
         ]);
 
-  const candidateCountByElectionId = (positionCounts as typeof positionCounts).reduce(
-    (acc, position) => {
-      acc.set(
-        position.electionId,
-        (acc.get(position.electionId) ?? 0) + position._count.canditates,
-      );
-      return acc;
-    },
-    new Map<string, number>(),
-  );
+  const candidateCountByElectionId = (
+    positionCounts as typeof positionCounts
+  ).reduce((acc, position) => {
+    acc.set(
+      position.electionId,
+      (acc.get(position.electionId) ?? 0) + position._count.canditates,
+    );
+    return acc;
+  }, new Map<string, number>());
 
   const votedElectionIdSet = new Set(
     votedElectionIds.map((item) => item.electionId),
   );
+  const totalElections = visibleElections.length;
+  const votedCount = votedElectionIdSet.size;
+  const pendingCount = Math.max(totalElections - votedCount, 0);
 
   if (visibleElections.length === 0)
     return (
@@ -116,16 +124,79 @@ async function FetchElections() {
           <p className="text-lg xl:text-xl">
             There&apos;s no active election yet.
           </p>
+
+          <Link
+            href="/vote-history"
+            className={buttonVariants({ variant: "outline" }) + " mt-4"}
+          >
+            Check Vote History
+          </Link>
         </div>
       </div>
     );
 
   return (
-    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10">
-      {/* HEADER */}
-      <h2 className="text-2xl text-brand-100 lg:text-3xl">
-        Active Election List
-      </h2>
+    <div className="space-y-3 mt-5 px-2 sm:px-5 lg:mt-8 xl:px-10 pb-10">
+      <div className="rounded-2xl border border-brand-100/30 bg-gradient-to-br from-brand-50 via-white to-orange-50 p-5 shadow-sm">
+        <h2 className="text-2xl text-brand-100 lg:text-3xl">Your Ballot Hub</h2>
+        <p className="mt-1 text-sm text-slate-600 lg:text-base">
+          Review active elections, check your progress, and open a ballot when
+          you are ready.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Card className="border-brand-100/30 shadow-none">
+            <CardContent className="flex items-center justify-between px-4 py-3">
+              <div>
+                <p className="text-xs text-slate-500">Active Elections</p>
+                <p className="text-2xl font-semibold text-brand-700">
+                  {totalElections}
+                </p>
+              </div>
+              <ListChecks className="text-brand-500" size={20} />
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-200 shadow-none">
+            <CardContent className="flex items-center justify-between px-4 py-3">
+              <div>
+                <p className="text-xs text-slate-500">Already Voted</p>
+                <p className="text-2xl font-semibold text-green-700">
+                  {votedCount}
+                </p>
+              </div>
+              <CheckCircle2 className="text-green-600" size={20} />
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-200 shadow-none">
+            <CardContent className="flex items-center justify-between px-4 py-3">
+              <div>
+                <p className="text-xs text-slate-500">Pending Ballots</p>
+                <p className="text-2xl font-semibold text-orange-700">
+                  {pendingCount}
+                </p>
+              </div>
+              <Clock3 className="text-orange-600" size={20} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-brand-100/30 bg-white/80 px-4 py-3">
+          <p className="text-sm font-medium text-brand-700">How voting works</p>
+          <p className="text-sm text-slate-600">
+            Open any election card, review candidates by position, then submit
+            your ballot once. Submitted ballots cannot be changed.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-10 flex items-center gap-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-brand-500">
+          Active Elections
+        </span>
+        <div className="h-px flex-1 bg-brand-100/40" />
+      </div>
 
       <div className="space-y-8 mx-auto md:mx-0 md:grid md:grid-cols-2 md:gap-x-5 2xl:gap-x-8">
         {visibleElections.map((items, index) => {
